@@ -8,6 +8,7 @@
                 font-family: sans-serif;
                 margin: 0;
                 padding: 0;
+                overflow-y: hidden;
             }
             h2 {
                 font-size: large;
@@ -37,12 +38,14 @@
             #sessions > li {
                 cursor: pointer;
                 padding: 1em;
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: #EF493E;
+                margin-top: 10px;
             }
             #sessions > li:hover {
                 background: #FBD3D1;
-            }
-            p {
-                font-style: italic;
             }
             #app {
                 position: fixed;
@@ -73,6 +76,7 @@
                 background: url(<%= require('./assets/lobby-bg.jpg').default %>) no-repeat;
                 background-size: cover;
                 padding: 50px;
+                height: 100%;
             }
 
             #host-new{
@@ -102,6 +106,22 @@
             #host-new:hover{
                 background-color:#9c1b12;
             }
+
+            p#users{
+                text-align: center;
+                margin-top: 0px;
+            }
+
+            #built-with{
+                background: url(<%= require('./assets/built-with-logo.png').default %>) no-repeat;
+                height: 55px;
+                width: 165px;
+                background-size: contain;
+                position: fixed;
+                bottom: 0;
+                right: 0;
+            }
+
         </style>
     </head>
     <body>
@@ -111,9 +131,9 @@
                 <button id="host-new">Host New Game</button>
                 <div id="games">
                     <p id="users"></p>
-                    <h2>Choose a game:</h2>
                     <ul id="sessions"></ul>
                 </div>
+                <a href="https://github.com/croquet/croquet-for-web-guardians" target="_blank"><div id="built-with"></div></a>
             </div>
         </div>
         <iframe id="app" src="about:blank"></iframe>

@@ -181,9 +181,9 @@ class LobbyView extends Croquet.View {
             item.textContent += `: ${description || "starting ..."}`;
             // item.textContent += ` [${Math.ceil((Date.now() - session.since) / 1000)}s,`;
             // item.textContent += ` timeout in ${(SESSION_TIMEOUT - Math.ceil((this.extrapolatedNow() - session.lastActive) / 1000))}s]`;
-            if (users.color) {
-                item.style.backgroundColor = users.color;
-            }
+            
+                item.style.backgroundColor = "FBD3D1";
+            
             item.addEventListener("click", () => this.sessionClicked(session.name));
             list.appendChild(item);
         }
