@@ -85,8 +85,8 @@ class Lobby extends Croquet.Model {
             }
             // if there were more than one user, the session will expire on its own
         }
-        console.log("lobby", this.now(), "view exited", viewId,
-            [...this.views.values()].map(v => `${v.viewId} ${v.session ? v.session.name : "in lobby"}`));
+        console.log("lobby", this.now(), "view exited", viewId, [...this.views.values()]
+            .map(v => `${v.viewId} ${v.session ? v.session.name : "in lobby"}`));
     }
 
     inAppSession({ viewId, name, now, users }) {
@@ -195,7 +195,7 @@ class LobbyView extends Croquet.View {
             if (viewId === this.viewId) continue; // don't count self
             if (view.session) continue; // don't count in-app users
             count++;
-            const loc = CROQUETVM.views[viewId]?.loc;  // FIXME: CROQUETVM is for debugging only
+            const loc = window.CROQUETVM.views[viewId]?.loc;  // FIXME: CROQUETVM is for debugging only
             if (loc?.country) {
                 let location = loc.country;
                 if (loc.region) location = loc.region + ", " + location;
@@ -247,7 +247,7 @@ class LobbyView extends Croquet.View {
 function enterApp(name) {
     // fixme: use a better UI
     if (!name) {
-        name = prompt("Session Name");
+        name = prompt("Session Name");  // eslint-disable-line no-alert
         if (!name) return "";
     }
     // open app in iframe
@@ -283,7 +283,7 @@ function joinLobbyOnMessage(e) {
     }
 }
 
-function toggleLobbyOnHashChange(e) {
+function toggleLobbyOnHashChange() {
     appSessionName = window.location.hash.slice(1);
     if (appSessionName) {
         enterApp(decodeURIComponent(appSessionName));
