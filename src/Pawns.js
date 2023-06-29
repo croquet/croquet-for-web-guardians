@@ -498,7 +498,7 @@ class LobbyRelayPawn extends Pawn {
             if (unknown) description += " and elsewhere";
         }
         const { health, demoMode } = this.wellKnownModel("modelRoot").gameState;
-        description += demoMode ? " [demo]" : health ? ` [health: ${health}]` : " [game over]";
+        description += demoMode ? " [demo]" : health ? ` [health: ${health}]` : " [not started yet]";
         const users = {
             count: this.model.viewIds.size,
             description,
