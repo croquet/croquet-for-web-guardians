@@ -1,4 +1,5 @@
 import * as Croquet from "@croquet/worldcore-kernel";
+import apiKey from "./apiKey.js";
 
 // Lobby is a simple session manager for Croquet apps.
 // When a user joins the lobby, they see a list of sessions.
@@ -301,7 +302,7 @@ async function joinLobby() {
         return;
     }
     lobbySession = Croquet.Session.join({
-        apiKey: '1Mnk3Gf93ls03eu0Barbdzzd3xl1Ibxs7khs8Hon9', // get your own from croquet.io/keys
+        ...apiKey,
         appId: "io.croquet.guardians.lobby",
         name: "lobby",
         password: "lobby",

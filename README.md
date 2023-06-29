@@ -16,6 +16,18 @@ All the multiplayer code is contained in this repository and Worldcore's, yet yo
 
 This is the Web version of _Guardians_, there is also a [Unity port](https://github.com/croquet/croquet-for-unity-guardians).
 
+## Hack it
+
+1. install dependencies
+
+        npm i
+
+2. edit [apiKey.js](apiKey.js) with your API key from [croquet.io/keys](https://croquet.io/keys/)
+
+3. run it
+
+        npm start
+
 ## The Game
 
 ![](assets/readme.jpg)
