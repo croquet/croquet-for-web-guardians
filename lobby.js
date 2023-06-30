@@ -152,20 +152,30 @@ class Lobby extends Croquet.Model {
             const date = now - now % (24 * 60 * 60 * 1000);
             if (date !== this.stats.current.date) {
                 if (!this.stats.current.date) {
-                    this.stats.current.date = date;
-                    if (!this.stats.history.length) {
+                    // first time we have a date, see if we have any history for it
+                    const existing = this.stats.history.find(entry => entry.date === date);
+                    if (existing) {
+                        // merge current stats into existing and use that
+                        for (const key in existing) {
+                            if (this.stats.current[key] > existing[key]) existing[key] = this.stats.current[key];
+                        }
+                        this.stats.current = existing;
+                    } else  {
+                        // no history, just save current stats
+                        this.stats.current.date = date;
                         this.stats.history.push(this.stats.current);
                     }
                 } else {
+                    // new day, save current stats and start new
                     this.stats.history.push(this.stats.current);
                     this.stats.current = { date, maxInLobby: 0, maxInSessions: 0, maxSessions: 0 };
-                    // limit history to 100 entries, but keep  the ones for largest maxInSessions, maxSessions, and maxInLobby
-                    if (this.stats.history.length > 100) {
-                        const keep = new Set(this.maxStats().values());
-                        // delete oldest entry that is not in keep
-                        const oldestIndex = this.stats.history.findIndex(entry => !keep.has(entry));
-                        this.stats.history.splice(oldestIndex, 1);
-                    }
+                }
+                // limit history to 100 entries, but keep the ones for largest stats
+                if (this.stats.history.length > 100) {
+                    const keep = new Set(this.maxStats().values());
+                    // delete oldest entry that is not in keep
+                    const oldestIndex = this.stats.history.findIndex(entry => !keep.has(entry));
+                    this.stats.history.splice(oldestIndex, 1);
                 }
                 changed = true;
             }
