@@ -338,6 +338,10 @@ async function joinLobby() {
 Croquet.App.makeWidgetDock(); // shows QR code
 
 window.onhashchange = toggleLobbyOnHashChange; // e.g. back button
+document.getElementById("back-to-lobby").onclick = () => {
+    exitApp();
+    joinLobby();
+};
 
 if (appSessionName) {
     // pretend we were in the lobby for backbutton purposes (not working?!)
