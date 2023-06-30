@@ -182,29 +182,33 @@ class LobbyView extends Croquet.View {
         //     { name: "Game 4", users: { count: 4, description: "4 users in here [not started yet]", color: "black" }, since: 500 },
         // ];
 
-        // sessions
+        // list ongoing sessions
         const sessions = Array.from(this.model.sessions.values());
         sessions.sort((a, b) => b.since - a.since);
         const list = document.getElementById("sessions");
-        list.innerHTML = "";
+        const items = [...list.querySelectorAll("li")];
         for (const session of sessions) {
-            const item = document.createElement("li");
-            item.textContent = session.name;
+            // reuse existing list item, or create a new one
+            const index = items.findIndex(i => i.getAttribute("data-session") === session.name);
+            let item = index >= 0 ? items.splice(index, 1)[0] : null;
+            if (!item) {
+                item = document.createElement("li");
+                item.setAttribute("data-session", session.name);
+                item.addEventListener("click", () => this.sessionClicked(session.name));
+                list.appendChild(item);
+            }
+            // update the list item
             const users = session.users; // string or { count, description, color }
             const description = users.description || users;
-            item.textContent += `: ${description || "starting ..."}`;
-            // item.textContent += ` [${Math.ceil((Date.now() - session.since) / 1000)}s,`;
-            // item.textContent += ` timeout in ${(SESSION_TIMEOUT - Math.ceil((this.extrapolatedNow() - session.lastActive) / 1000))}s]`;
-            if (users.color) {
-                // color is either "blue" (for demo), or "red" / "green" / "yellow" / "black" of the coin
-                // actual color is set via CSS
-                item.classList.add(users.color);
-            }
-            item.addEventListener("click", () => this.sessionClicked(session.name));
-            list.appendChild(item);
+            item.textContent = `${session.name}: ${description || "starting ..."}`;
+            item.className = users.color;
+        }
+        // remove any remaining items
+        for (const item of items) {
+            list.removeChild(item);
         }
         document.getElementById("no-games").classList.toggle("hidden", sessions.length > 0);
-        // lobby users
+        // list players in lobby
         const locations = new Map();
         let count = 0;
         let unknown = false;
