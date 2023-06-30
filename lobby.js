@@ -40,9 +40,13 @@ const SESSION_TIMEOUT = 5; // seconds
 
 class Lobby extends Croquet.Model {
 
-    init() {
+    init(_, persisted = {}) {
         this.sessions = new Map();
         this.views = new Map();
+        this.stats = {
+            current: { maxInLobby: 0, maxInSessions: 0, maxSessions: 0, date: 0 },
+            history: persisted.history || [],
+        };
         this.subscribe(this.sessionId, "view-join", this.viewJoined);
         this.subscribe(this.sessionId, "view-exit", this.viewExited);
         this.subscribe(this.sessionId, "in-app-session", this.inAppSession);
@@ -61,6 +65,7 @@ class Lobby extends Croquet.Model {
                 timeout: null,
             };
             this.sessions.set(name, session);
+            this.recordStats();
         }
         return session;
     }
@@ -70,6 +75,7 @@ class Lobby extends Croquet.Model {
             viewId,
             session: null,
         });
+        this.recordStats();
         console.log("lobby", this.now(), "view joined", viewId, [...this.views.keys()]);
     }
 
@@ -79,7 +85,7 @@ class Lobby extends Croquet.Model {
         const session = view.session;
         if (session) {
             session.views.delete(view);
-            const count = "count" in session.users ? session.users.count : parseInt(session.users, 10);
+            const count = typeof session.users.count === "number" ? session.users.count : parseInt(session.users, 10);
             if (count === 1) {
                 // last user in session, expire it right away
                 this.sessionExpired(session);
@@ -114,6 +120,7 @@ class Lobby extends Croquet.Model {
         }
         this.sessionActive(session);
         this.publish(this.sessionId, "session-changed", name);
+        this.recordStats(now);
         // console.log("lobby", this.now(), "in app session", session.name, users, [...session.views].map(v => v.viewId));
     }
 
@@ -131,6 +138,65 @@ class Lobby extends Croquet.Model {
         this.sessions.delete(session.name);
         this.publish(this.sessionId, "session-changed", session.name);
         console.log("lobby", this.now(), "session expired", session.name);
+    }
+
+    recordStats(now = 0) {
+        // okay this is more complex than the whole rest of the lobby combined
+        // and strictly for our own amusement
+        let changed = false;
+        if (now) {
+            // keep one entry per day
+            const date = now - now % (24 * 60 * 60 * 1000);
+            if (date !== this.stats.current.date) {
+                if (!this.stats.current.date) {
+                    this.stats.current.date = date;
+                } else {
+                    this.stats.history.push(this.stats.current);
+                    this.stats.current = { date, maxInLobby: 0, maxInSessions: 0, maxSessions: 0 };
+                    // limit history to 100 entries, but keep  the ones for largest maxInSessions, maxSessions, and maxInLobby
+                    if (this.stats.history.length > 100) {
+                        const keep = new Set(this.maxStats().values());
+                        // delete oldest entry that is not in keep
+                        const oldestIndex = this.stats.history.findIndex(entry => !keep.has(entry));
+                        this.stats.history.splice(oldestIndex, 1);
+                    }
+                }
+                changed = true;
+            }
+        }
+        if (this.views.size > this.stats.current.maxInLobby) {
+            this.stats.current.maxInLobby = this.views.size;
+            changed = true;
+        }
+        if (this.sessions.size > this.stats.current.maxSessions) {
+            this.stats.current.maxSessions = this.sessions.size;
+            changed = true;
+        }
+        let sumInSessions = 0;
+        for (const session of this.sessions.values()) {
+            sumInSessions += typeof session.users.count === "number" ? session.users.count : parseInt(session.users, 10);
+        }
+        if (sumInSessions > this.stats.current.maxInSessions) {
+            this.stats.current.maxInSessions = sumInSessions;
+            changed = true;
+        }
+        if (changed) {
+            this.persistSession({ history: this.stats.history });
+            // console.log("lobby", this.now(), "stats", this.stats);
+        }
+    }
+
+    maxStats() {
+        // find entries for largest maxInSessions, maxSessions, and maxInLobby
+        const max = new Map();
+        for (const key of ["maxInLobby", "maxInSessions", "maxSessions"]) {
+            max.set(key, this.stats.history.reduce(
+                (largest, entry) => entry[key] > largest[key] ||
+                    entry[key] === largest[key] && entry.date < largest.date
+                    ? entry : largest, this.stats.history[0]));
+        }
+        return max;
+        // could this be written in a more understandable way? sure. but I can't be bothered right now. --codefrau
     }
 }
 Lobby.register("Lobby");
@@ -240,6 +306,9 @@ class LobbyView extends Croquet.View {
             }
         }
         document.getElementById("users").innerHTML = users;
+        // stats
+        const stats = [...this.model.maxStats()].map(([k,v]) => `${k}: ${v[k]} (${new Date(v.date).toISOString().slice(0,10)})`).join("\n");
+        document.getElementById("intro").setAttribute("title", stats);
     }
 
     sessionClicked(name) {
@@ -326,6 +395,7 @@ async function joinLobby() {
         appId: "io.croquet.guardians.lobby",
         name: "lobby",
         password: "lobby",
+        options: { BaseUrl }, // to get a different persistentId per deployment
         location: true,
         model: Lobby,
         view: LobbyView,
