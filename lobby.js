@@ -150,6 +150,9 @@ class Lobby extends Croquet.Model {
             if (date !== this.stats.current.date) {
                 if (!this.stats.current.date) {
                     this.stats.current.date = date;
+                    if (!this.stats.history.length) {
+                        this.stats.history.push(this.stats.current);
+                    }
                 } else {
                     this.stats.history.push(this.stats.current);
                     this.stats.current = { date, maxInLobby: 0, maxInSessions: 0, maxSessions: 0 };
@@ -180,7 +183,7 @@ class Lobby extends Croquet.Model {
             this.stats.current.maxInSessions = sumInSessions;
             changed = true;
         }
-        if (changed) {
+        if (changed && this.stats.history.length > 0) {
             this.persistSession({ history: this.stats.history });
             // console.log("lobby", this.now(), "stats", this.stats);
         }
