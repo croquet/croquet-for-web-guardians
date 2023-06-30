@@ -144,16 +144,6 @@ class LobbyView extends Croquet.View {
         const newGameButton = document.getElementById('host-new');
         newGameButton.addEventListener("click", () => this.sessionClicked(null));
 
-        const games = document.getElementById("gamesList");
-        const gameContainer = document.getElementById("games");
-
-        if(!games){
-            const noGames = document.createElement("p")
-            noGames.setAttribute("id", "no-games");
-            noGames.textContent = "0 games found";
-            gameContainer.appendChild(noGames);
-        }
-
         window.onmessage = e => {
             if (e.data && e.data.type === "croquet-lobby") {
                 const { name, users } = e.data;
@@ -186,7 +176,6 @@ class LobbyView extends Croquet.View {
         for (const session of sessions) {
             const item = document.createElement("li");
             item.textContent = session.name;
-            item.setAttribute("id", "gamesList");
             const users = session.users; // string or { count, description, color }
             const description = users.description || users;
             item.textContent += `: ${description || "starting ..."}`;
@@ -198,6 +187,7 @@ class LobbyView extends Croquet.View {
             item.addEventListener("click", () => this.sessionClicked(session.name));
             list.appendChild(item);
         }
+        document.getElementById("no-games").classList.toggle("hidden", sessions.length);
         // lobby users
         const locations = new Map();
         let count = 0;
