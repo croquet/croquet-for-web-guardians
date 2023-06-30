@@ -17,6 +17,11 @@ import apiKey from "./apiKey.js";
 // [ ] unlisted sessions (join directly by name)
 // [ ] lobby/session password (?)
 
+// redirect old session links to lobby
+if (window.location.search.includes("q=")) {
+    window.location.href = window.location.href.replace(/\?.*$/, "");
+}
+
 const BaseUrl = window.location.href.replace(/[^/?#]?([?#].*)?$/, "");
 Croquet.Constants.AppUrl = BaseUrl + "game.html";
 
