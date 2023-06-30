@@ -9,6 +9,7 @@
                 margin: 0;
                 padding: 0;
                 overflow-y: hidden;
+                box-sizing: border-box;
             }
             h2 {
                 font-size: large;
@@ -41,11 +42,33 @@
                 font-family: 'Courier New', monospace;
                 font-weight: 700;
                 font-size: 1.1rem;
-                color: #EF493E;
                 margin-top: 10px;
+                transition: all 0.2s ease-in-out;
+                border-radius: 5px;
             }
             #sessions > li:hover {
-                background: #FBD3D1;
+                scale: 1.05;
+                box-shadow: 5px 5px 10px rgba(0,0,0,0.2);
+            }
+            .blue {
+                color: blue;
+                background-color: lightskyblue;
+            }
+            .red {
+                color: crimson;
+                background-color: pink;
+            }
+            .yellow {
+                color: darkgoldenrod;
+                background-color: gold;
+            }
+            .green {
+                color: green;
+                background-color: lightgreen;
+            }
+            .black {
+                color: black;
+                background-color: lightgray;
             }
             #app {
                 position: fixed;
@@ -137,7 +160,7 @@
                 align-items: center;
                 justify-content: center;
             }
-            #nogames.hidden {
+            #no-games.hidden {
                 display: none;
             }
 
