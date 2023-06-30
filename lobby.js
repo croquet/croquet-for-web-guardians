@@ -189,11 +189,13 @@ class Lobby extends Croquet.Model {
     maxStats() {
         // find entries for largest maxInSessions, maxSessions, and maxInLobby
         const max = new Map();
-        for (const key of ["maxInLobby", "maxInSessions", "maxSessions"]) {
-            max.set(key, this.stats.history.reduce(
-                (largest, entry) => entry[key] > largest[key] ||
-                    entry[key] === largest[key] && entry.date < largest.date
-                    ? entry : largest, this.stats.history[0]));
+        if (this.stats.history.length > 0) {
+            for (const key of ["maxInLobby", "maxInSessions", "maxSessions"]) {
+                max.set(key, this.stats.history.reduce(
+                    (largest, entry) => entry[key] > largest[key] ||
+                        entry[key] === largest[key] && entry.date < largest.date
+                        ? entry : largest, this.stats.history[0]));
+            }
         }
         return max;
         // could this be written in a more understandable way? sure. but I can't be bothered right now. --codefrau
