@@ -8,6 +8,8 @@
                 font-family: sans-serif;
                 margin: 0;
                 padding: 0;
+                overflow-y: hidden;
+                box-sizing: border-box;
             }
             h2 {
                 font-size: large;
@@ -37,12 +39,36 @@
             #sessions > li {
                 cursor: pointer;
                 padding: 1em;
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+                margin-top: 10px;
+                transition: all 0.2s ease-in-out;
+                border-radius: 5px;
             }
             #sessions > li:hover {
-                background: #FBD3D1;
+                scale: 1.05;
+                box-shadow: 5px 5px 10px rgba(0,0,0,0.2);
             }
-            p {
-                font-style: italic;
+            .blue {
+                color: blue;
+                background-color: lightskyblue;
+            }
+            .red {
+                color: crimson;
+                background-color: pink;
+            }
+            .yellow {
+                color: darkgoldenrod;
+                background-color: gold;
+            }
+            .green {
+                color: green;
+                background-color: lightgreen;
+            }
+            .black {
+                color: black;
+                background-color: lightgray;
             }
             #app {
                 position: fixed;
@@ -73,6 +99,7 @@
                 background: url(<%= require('./assets/lobby-bg.jpg').default %>) no-repeat;
                 background-size: cover;
                 padding: 50px;
+                height: 100%;
             }
 
             #host-new{
@@ -102,6 +129,41 @@
             #host-new:hover{
                 background-color:#9c1b12;
             }
+
+            p#users{
+                text-align: center;
+                margin-top: 0px;
+                font-weight: 600;
+                color: rgb(78, 78, 78);
+            }
+
+            #built-with{
+                background: url(<%= require('./assets/built-with-logo.png').default %>) no-repeat;
+                height: 55px;
+                width: 165px;
+                background-size: contain;
+                position: fixed;
+                bottom: 0;
+                right: 0;
+            }
+
+            #no-games{
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: #EF493E;
+                display: flex;
+                width: 50%;
+                min-height: 300px;
+                margin: auto;
+                border-radius: 10px;
+                align-items: center;
+                justify-content: center;
+            }
+            #no-games.hidden {
+                display: none;
+            }
+
         </style>
     </head>
     <body>
@@ -111,9 +173,10 @@
                 <button id="host-new">Host New Game</button>
                 <div id="games">
                     <p id="users"></p>
-                    <h2>Choose a game:</h2>
                     <ul id="sessions"></ul>
+                    <p id="no-games">0 games found</p>
                 </div>
+                <a href="https://github.com/croquet/croquet-for-web-guardians" target="_blank"><div id="built-with"></div></a>
             </div>
         </div>
         <iframe id="app" src="about:blank"></iframe>

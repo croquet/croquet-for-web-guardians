@@ -173,6 +173,15 @@ class LobbyView extends Croquet.View {
     showSessions() {
         if (appSessionName) return;
 
+        // uncomment for testing
+        // const sessions = [
+        //     { name: "Demo", users: { count: 2, description: "2 users in here from all over the world [health: 42]", color: "blue" }, since: 100 },
+        //     { name: "Game 1", users: { count: 5, description: "5 users in here [health: 12]", color: "red" }, since: 200 },
+        //     { name: "Game 2", users: { count: 3, description: "3 users in here [health: 42]", color: "yellow" }, since: 300 },
+        //     { name: "Game 3", users: { count: 1, description: "1 user in here [health: 77]", color: "green" }, since: 400 },
+        //     { name: "Game 4", users: { count: 4, description: "4 users in here [not started yet]", color: "black" }, since: 500 },
+        // ];
+
         // sessions
         const sessions = Array.from(this.model.sessions.values());
         sessions.sort((a, b) => b.since - a.since);
@@ -187,11 +196,14 @@ class LobbyView extends Croquet.View {
             // item.textContent += ` [${Math.ceil((Date.now() - session.since) / 1000)}s,`;
             // item.textContent += ` timeout in ${(SESSION_TIMEOUT - Math.ceil((this.extrapolatedNow() - session.lastActive) / 1000))}s]`;
             if (users.color) {
-                item.style.backgroundColor = users.color;
+                // color is either "blue" (for demo), or "red" / "green" / "yellow" / "black" of the coin
+                // actual color is set via CSS
+                item.classList.add(users.color);
             }
             item.addEventListener("click", () => this.sessionClicked(session.name));
             list.appendChild(item);
         }
+        document.getElementById("no-games").classList.toggle("hidden", sessions.length > 0);
         // lobby users
         const locations = new Map();
         let count = 0;
