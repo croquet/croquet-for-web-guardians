@@ -17,7 +17,7 @@ App.sessionURL = url.href; // for QR code
 if (!inIframe || !sessionName) window.location.href = App.sessionURL;
 
 // ensure unique session per lobby URL
-const BaseUrl = url.href.replace(/[^/?#]?([?#].*)?$/, "");
+const BaseUrl = url.href.replace(/[^/?#]*([?#].*)?$/, "");
 Constants.LobbyUrl = BaseUrl + "index.html";    // hashed into sessionId
 
 App.makeWidgetDock();

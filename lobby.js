@@ -22,7 +22,7 @@ if (window.location.search.includes("q=")) {
     window.location.href = window.location.href.replace(/\?.*$/, "");
 }
 
-const BaseUrl = window.location.href.replace(/[^/?#]?([?#].*)?$/, "");
+const BaseUrl = window.location.href.replace(/[^/?#]*([?#].*)?$/, "");
 Croquet.Constants.AppUrl = BaseUrl + "game.html";
 
 let appname = window.location.pathname.match(/([^/]+)\/$/, "$1");
