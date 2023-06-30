@@ -44,9 +44,12 @@ class Lobby extends Croquet.Model {
         this.sessions = new Map();
         this.views = new Map();
         this.stats = {
-            current: { maxInLobby: 0, maxInSessions: 0, maxSessions: 0, date: 0 },
+            current: { maxInLobby: 0, maxInSessions: 0, maxSessions: 0, maxInSession: 0, date: 0 },
             history: persisted.history || [],
         };
+        for (const item of this.stats.history) {
+            if (!item.maxInSession) item.maxInSession = 1; // update older history
+        }
         this.subscribe(this.sessionId, "view-join", this.viewJoined);
         this.subscribe(this.sessionId, "view-exit", this.viewExited);
         this.subscribe(this.sessionId, "in-app-session", this.inAppSession);
@@ -176,11 +179,18 @@ class Lobby extends Croquet.Model {
             changed = true;
         }
         let sumInSessions = 0;
+        let maxInSession = 0;
         for (const session of this.sessions.values()) {
-            sumInSessions += typeof session.users.count === "number" ? session.users.count : parseInt(session.users, 10);
+            const count = typeof session.users.count === "number" ? session.users.count : parseInt(session.users, 10);
+            sumInSessions += count;
+            if (count > maxInSession) maxInSession = count;
         }
         if (sumInSessions > this.stats.current.maxInSessions) {
             this.stats.current.maxInSessions = sumInSessions;
+            changed = true;
+        }
+        if (maxInSession > this.stats.current.maxInSession) {
+            this.stats.current.maxInSession = maxInSession;
             changed = true;
         }
         if (changed && this.stats.history.length > 0) {
@@ -190,10 +200,11 @@ class Lobby extends Croquet.Model {
     }
 
     maxStats() {
-        // find entries for largest maxInSessions, maxSessions, and maxInLobby
+        // gather entries for largest individual stats
+        // NOTE: this is also called directly from view code, don't modify anything here!!!
         const max = new Map();
         if (this.stats.history.length > 0) {
-            for (const key of ["maxInLobby", "maxInSessions", "maxSessions"]) {
+            for (const key of ["maxInLobby", "maxInSessions", "maxInSession", "maxSessions"]) {
                 max.set(key, this.stats.history.reduce(
                     (largest, entry) => entry[key] > largest[key] ||
                         entry[key] === largest[key] && entry.date < largest.date
