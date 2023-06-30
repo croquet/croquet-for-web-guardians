@@ -163,7 +163,7 @@ class LobbyView extends Croquet.View {
 
     async relayChanged({ name, viewId }) {
         console.log("lobby", "relay changed", name, viewId, viewId === this.viewId ? "(me)" : "(not me)");
-        if (name === appSessionName && viewId !== this.viewId) {
+        if (this.session === lobbySession && name === appSessionName && viewId !== this.viewId) {
             console.log("lobby", "leaving lobby session", name, this.viewId);
             await this.session.leave();
             lobbySession = null;
