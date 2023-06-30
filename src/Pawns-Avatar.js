@@ -1,4 +1,4 @@
-// Guardians Avatar
+// Guardians Avatar Pawn (Tank)
 // Copyright (c) 2023 CROQUET CORPORATION
 
 import { Pawn, mix, PM_Avatar, PM_Smoothed, toRad,

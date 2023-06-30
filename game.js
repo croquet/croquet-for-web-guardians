@@ -4,11 +4,9 @@
 
 import { App, StartWorldcore} from "@croquet/worldcore-kernel";
 
-import {  MyViewRoot } from "./src/Pawns";
 import { MyModelRoot } from "./src/Actors";
-import "./src/Avatar";
-import apiKey from "./apiKey.js";
-
+import {  MyViewRoot } from "./src/Pawns";
+import apiKey from "./apiKey";
 
 // redirect to lobby if not in iframe or session
 const inIframe = window.parent !== window;
@@ -21,7 +19,7 @@ if (!inIframe || !sessionName) window.location.href = App.sessionURL;
 App.makeWidgetDock();
 StartWorldcore({
     ...apiKey,
-    appId: 'io.croquet.worldcore.guardians',
+    appId: 'io.croquet.guardians', // <-- feel free to change
     name: sessionName,
     password: "none",
     location: true,

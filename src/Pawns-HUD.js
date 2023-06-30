@@ -1,4 +1,4 @@
-// Guardians BotHUD
+// Guardians HUD
 // Copyright (c) 2023 CROQUET CORPORATION
 
 import { ButtonWidget2, TextWidget2, Widget2 } from "@croquet/worldcore-widget2";

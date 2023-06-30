@@ -1,5 +1,5 @@
 import * as Croquet from "@croquet/worldcore-kernel";
-import apiKey from "./apiKey.js";
+import apiKey from "./apiKey";
 
 // Lobby is a simple session manager for Croquet apps.
 // When a user joins the lobby, they see a list of sessions.
@@ -162,7 +162,7 @@ class LobbyView extends Croquet.View {
     }
 
     async relayChanged({ name, viewId }) {
-        console.log("lobby", "relay changed", name, viewId);
+        console.log("lobby", "relay changed", name, viewId, viewId === this.viewId ? "(me)" : "(not me)");
         if (name === appSessionName && viewId !== this.viewId) {
             console.log("lobby", "leaving lobby session", name, this.viewId);
             await this.session.leave();

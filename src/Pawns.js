@@ -25,7 +25,9 @@ import { ViewRoot, ViewService, Pawn, mix, InputManager, PM_Smoothed, PM_Spatial
     toRad, m4_translation, m4_getTranslation, PerlinNoise } from "@croquet/worldcore-kernel";
 import { ThreeInstanceManager, PM_ThreeInstanced, PM_ThreeVisible, THREE, GLTFLoader, ThreeRenderManager, ThreeRaycast } from "@croquet/worldcore-three";
 import { HUD } from "@croquet/worldcore-widget2";
-import { HUDWidget } from "./BotHUD";
+import { HUDWidget } from "./Pawns-HUD";
+import /* { AvatarPawn } from */ "./Pawns-Avatar"; // referenced by name in AvatarActor
+
 
 // Illustration 112505376 / 360 Sky © Planetfelicity | Dreamstime.com
 import sky from "../assets/alienSky1.jpg";
