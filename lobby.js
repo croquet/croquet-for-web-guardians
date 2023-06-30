@@ -28,7 +28,6 @@ Croquet.Constants.AppUrl = BaseUrl + "game.html";
 let appname = window.location.pathname.match(/([^/]+)\/$/, "$1");
 if (appname) {
     appname = appname[1].replace(/^./, c => c.toUpperCase());
-    document.querySelector("h1").textContent = appname;
     document.title = appname + " Lobby";
 } else {
     appname = document.title.replace(/\bLobby\b/, "").trim() || "Croquet";
