@@ -140,7 +140,11 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
     shoot() {
         if (this.now()-this.lastShootTime > this.waitShootTime) {
             this.lastShootTime = this.now();
-            this.say("shoot", this.yaw+Math.PI);
+            // send a message with four numbers: launch position x, y, z and yaw
+            const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time
+            const pos = v3_add(this.translation, v3_rotate([0, 0, -dist], this.rotation)); // launch position
+            const args = [ ...pos, this.yaw + Math.PI];
+            this.say("shoot", args);
             //console.log("Shoot");
         }
     }

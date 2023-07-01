@@ -6,7 +6,6 @@
 
 import { ModelRoot, Actor, mix, AM_Spatial, AM_Behavioral, v3_add, v3_sub, v3_scale, UserManager, User, AM_Avatar, q_axisAngle, v3_normalize, v3_rotate, AM_Grid, AM_OnGrid } from "@croquet/worldcore-kernel"; // eslint-disable-line import/no-extraneous-dependencies
 
-// ignore the y-values
 const v_dist2Sqr = function (a,b) {
     const dx = a[0] - b[0];
     const dy = a[2] - b[2];
@@ -26,6 +25,10 @@ class BaseActor extends mix(Actor).with(AM_Spatial, AM_Grid) {
 
     get pawn() {return "BasePawn"}
     get gamePawnType() { return "" } // don't build a connected pawn for Unity
+
+    // init(options) {
+    //     super.init(options);
+    // }
 }
 BaseActor.register('BaseActor');
 
@@ -105,7 +108,7 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
     killMe(s=0.3, onTarget) {
         FireballActor.create({translation:this.translation, scale:[s,s,s], onTarget});
         this.publish("bots", "destroyedBot", onTarget);
-        this.future(200).destroy();
+        this.destroy();
     }
 
     resetGame() {
@@ -120,7 +123,7 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
         // blow up at the tower
         if ( v_mag2Sqr(this.translation) < 20 ) this.killMe(1, true);
         // otherwise, check if we need to move around an object
-        else if (!this.doomed) {
+        if (!this.doomed) {
             this.future(100).doFlee();
             const blockers = this.pingAll("block");
             if (blockers.length===0) return;
@@ -131,7 +134,7 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
     flee(bot) {
         const from = v3_sub(this.translation, bot.translation);
         const mag2 = v_mag2Sqr(from);
-        if (mag2 > bot.radiusSqr) return;
+        if (mag2 > this.radiusSqr) return;
         if (mag2===0) {
             const a = Math.random() * 2 * Math.PI;
             from[0] = this.radius * Math.cos(a);
@@ -152,6 +155,21 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
 BotActor.register("BotActor");
 
 //------------------------------------------------------------------------------------------
+//--SimpleActor ----------------------------------------------------------------------------
+// All purpose actor for adding bits to other, smarter actors
+//------------------------------------------------------------------------------------------
+
+// class SimpleActor extends mix(Actor).with(AM_Spatial) {
+
+//     init(options) {
+//         super.init(options);
+//     }
+//     get colorIndex() { return this._colorIndex }
+
+// }
+// SimpleActor.register('SimpleActor');
+
+//------------------------------------------------------------------------------------------
 //--BollardActor, TowerActor ---------------------------------------------------------------
 // Actors that place themselves on the grid so other actors can avoid them
 //------------------------------------------------------------------------------------------
@@ -161,7 +179,10 @@ class BollardActor extends mix(Actor).with(AM_Spatial, AM_OnGrid) {
     get gamePawnType() { return "bollard" }
 
     get radius() { return this._radius }
-    get radiusSqr() { return 25 }
+
+    // init(options) {
+    //     super.init(options);
+    // }
 }
 BollardActor.register('BollardActor');
 
@@ -170,7 +191,10 @@ class TowerActor extends mix(Actor).with(AM_Spatial, AM_OnGrid) {
     get gamePawnType() { return this._index >= 0 ? `tower${this._index}` : "" } // tower "-1" has no pawn; actor collisions only
 
     get radius() { return this._radius || 0 } // central tower isn't even assigned a radius
-    get radiusSqr() { return 25 }
+
+    // init(options) {
+    //     super.init(options);
+    // }
 }
 TowerActor.register('TowerActor');
 
@@ -188,7 +212,7 @@ class MissileActor extends mix(Actor).with(AM_Spatial, AM_Behavioral) {
         super.init(options);
         this.future(8000).destroy(); // destroy after some time
         this.lastTranslation = [0,0,0];
-        this.bounceWait = this.now(); // need to bounce otherwise we might instantly bounce again
+        this.lastBounce = null; // the thing we last bounced off
         this.tick();
     }
 
@@ -204,47 +228,37 @@ class MissileActor extends mix(Actor).with(AM_Spatial, AM_Behavioral) {
     }
 
     test() {
-        if (this.now()>=this.bounceWait) {
-            let aim;
-
-            const bot = this.parent.pingAny("bot", this.translation, 4, this);
-
-            if (bot) {
-                const d2 = v_dist2Sqr(this.translation, bot.translation);
-                if (d2 < 3.5) {
-                    bot.killMe(0.3, false);
-                    this.destroy();
-                    return;
-                }
+        const bot = this.parent.pingAny("bot", this.translation, 4, this);
+        if (bot) {
+            const d2 = v_dist2Sqr(this.translation, bot.translation);
+            if (d2 < 4) { // $$$ WAS 3.5 (but bot radius is 2, so 4 seems fair)
+                // console.log(`bot ${bot.id} hit at distance ${Math.sqrt(d2).toFixed(2)}`);
+                bot.killMe(0.3, false);
+                this.destroy();
+                return;
             }
+        }
 
-            const bollard = this.parent.pingAny("block", this.translation, 4, this);
-
-            if (bollard) {
-                const d2 = v_dist2Sqr(this.translation, bollard.translation);
+        // the blockers (tagged with "block") include all avatars
+        const blocker = this.parent.pingAny("block", this.translation, 4, this);
+        if (blocker) {
+            if (!this.lastBounce && blocker.tags.has("avatar") && blocker.colorIndex === this.colorIndex) {
+                // ignore own avatar when it's the first object we've encountered
+            } else if (blocker !== this.lastBounce) {
+                const d2 = v_dist2Sqr(this.translation, blocker.translation);
                 if (d2 < 2.5) {
-                    this.bounceWait = this.now()+20;
-                    aim = v3_sub(this.translation, bollard.translation);
-                    aim[1]=0;
-                    aim = v3_normalize(aim);
-                    if (this.go) this.go.destroy();
-
-                    this.go = this.behavior.start({name: "GoBehavior", aim, speed: missileSpeed, tickRate: 20});
-                }
-            }
-            const avatar = this.parent.pingAny("avatar", this.translation, 4, this);
-            if (avatar) {
-                const d = v_dist2Sqr(this.translation, avatar.translation);
-                if (d < 2.5) {
-                    this.bounceWait = this.now()+20;
-                    aim = v3_sub(this.translation, avatar.translation);
+                    // console.log("bounce", blocker);
+                    this.lastBounce = blocker;
+                    let aim = v3_sub(this.translation, blocker.translation);
                     aim[1]=0;
                     aim = v3_normalize(aim);
                     if (this.go) this.go.destroy();
                     this.go = this.behavior.start({name: "GoBehavior", aim, speed: missileSpeed, tickRate: 20});
+                    this.ballisticVelocity = aim.map(val => val * missileSpeed);
                 }
             }
         }
+
         this.lastTranslation = this.translation;
     }
 }
@@ -262,8 +276,6 @@ class AvatarActor extends mix(Actor).with(AM_Spatial, AM_Avatar, AM_OnGrid) {
     init(options) {
         super.init(options);
         this.isAvatar = true;
-        this.radius = 10;
-        this.radiusSqr = this.radius*this.radius;
         this.listen("shoot", this.doShoot);
         this.subscribe("all", "godMode", this.doGodMode);
     }
@@ -274,11 +286,15 @@ class AvatarActor extends mix(Actor).with(AM_Spatial, AM_Avatar, AM_OnGrid) {
         this.say("doGodMode", gm);
     }
 
-    doShoot(yaw) {
-        const aim = v3_rotate([0,0,1], q_axisAngle([0,1,0], yaw)); //
-        const translation = v3_add(this.translation, v3_scale(aim, 5));
+    doShoot(argFloats) {
+        // view is now expected to set the launch location, given that the launcher
+        // can compensate for its own velocity
+        const [ x, y, z, yaw ] = argFloats;
+        const aim = v3_rotate([0,0,1], q_axisAngle([0,1,0], yaw));
+        const translation = [x, y, z]; // v3_add([x, y, z], v3_scale(aim, 5));
         const missile = MissileActor.create({parent: this.parent, translation, colorIndex: this.colorIndex});
         missile.go = missile.behavior.start({name: "GoBehavior", aim, speed: missileSpeed, tickRate: 20});
+        missile.ballisticVelocity = aim.map(val => val * missileSpeed);
     }
 
     resetGame() { // don't go home at end of game
@@ -344,6 +360,7 @@ class MyUser extends User {
         this.avatar = AvatarActor.create({
             parent: base,
             driver: this.userId,
+            //instanceName: 'tankTracks',
             tags: ["avatar", "block"],
             ...props
         });
@@ -372,12 +389,12 @@ class GameStateActor extends Actor {
 
     init(options) {
         super.init(options);
+
         this.subscribe("game", "gameStarted", this.gameStarted); // from ModelRoot.startGame
         this.subscribe("bots", "madeWave", this.madeBotWave); // from ModelRoot.makeWave
         this.subscribe("bots", "destroyedBot", this.destroyedBot); // from BotActor.killMe
+
         this.subscribe("stats", "update", this.updateStats); // from BotHUD (forcing stats to be published, as an alternative to just reading them)
-        this.subscribe("game", "undying", this.undying); // from user input
-        this.demoMode = false;
     }
 
     gameStarted() {
@@ -387,11 +404,6 @@ class GameStateActor extends Actor {
         this.health = 100;
         this.gameEnded = false;
         this.updateStats();
-    }
-
-    undying() {
-        this.demoMode = !this.demoMode;
-        console.log("demo mode is:", this.demoMode?"on":"off");
     }
 
     madeBotWave({ wave, addedBots }) {
@@ -510,6 +522,8 @@ export class MyModelRoot extends ModelRoot {
         this.subscribe("game", "endGame", this.endGame); // from GameState.destroyedBot
         this.subscribe("game", "startGame", this.startGame); // from BotHUD button
         this.subscribe("game", "bots", this.demoBots); // from user input
+        this.subscribe("game", "undying", this.undying); // from user input
+        this.demoMode = false;
 
         const bollardScale = 3; // size of the bollard
         const bollardDistance = bollardScale*3; // distance between bollards
@@ -551,6 +565,11 @@ export class MyModelRoot extends ModelRoot {
         LobbyRelayActor.create();
 
         this.startGame();
+    }
+
+    undying() {
+        this.demoMode = !this.demoMode;
+        console.log("demo mode is:", this.demoMode?"on":"off");
     }
 
     startGame() {
