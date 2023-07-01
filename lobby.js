@@ -317,12 +317,7 @@ class LobbyView extends Croquet.View {
         sessions.sort((a, b) => b.since - a.since);
         const list = document.getElementById("sessions");
         const items = [...list.querySelectorAll("li")];
-        let gameOverSessions = 0;
         for (const session of sessions) {
-            if (session.users.color === "black") {
-                gameOverSessions++;
-                continue; // do not list game over sessions
-            }
             // reuse existing list item, or create a new one
             const index = items.findIndex(i => i.getAttribute("data-session") === session.name);
             let item = index >= 0 ? items.splice(index, 1)[0] : null;
@@ -342,7 +337,7 @@ class LobbyView extends Croquet.View {
         for (const item of items) {
             list.removeChild(item);
         }
-        document.getElementById("no-games").classList.toggle("hidden", sessions.length > gameOverSessions);
+        document.getElementById("no-games").classList.toggle("hidden", sessions.length > 0);
         // list players in lobby
         const locations = new Map();
         let count = 0;
@@ -379,7 +374,7 @@ class LobbyView extends Croquet.View {
         // stats
         const maxStats = [...this.model.maxStats()].map(([k,v]) => `${k}: ${v[k]} (${new Date(v.date).toISOString().slice(0,10)})`).join("\n");
         const totalNumSessions = this.model.stats.history.reduce((sum, v) => sum + v.numSessions, this.model.stats.prehistoricSessions);
-        document.getElementById("intro").setAttribute("title", `${maxStats}\ntotalNumSessions: ${totalNumSessions}\ngameOverSessions: ${gameOverSessions}`);
+        document.getElementById("intro").setAttribute("title", `${maxStats}\ntotalNumSessions: ${totalNumSessions}`);
     }
 
     sessionClicked(name) {
