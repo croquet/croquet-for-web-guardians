@@ -89,8 +89,11 @@
                 font-size: 20px;
                 cursor: pointer;
                 border: none;
-                border-radius: 10px;
+                border-radius: 412px;
                 opacity: 0.5;
+                height: 30px;
+                line-height: 10px;
+                font-weight: bold;
             }
             #back-to-lobby:hover {
                 scale: 1.2;
@@ -154,12 +157,17 @@
 
             #built-with{
                 background: url(<%= require('./assets/built-with-logo.png').default %>) no-repeat;
-                height: 55px;
-                width: 165px;
+                height: 40px;
+                width: 117px;
                 background-size: contain;
                 position: fixed;
                 bottom: 0;
                 right: 0;
+            }
+            #built-with:hover{
+                height: 45px;
+                width: 140px;
+                transition: all .2s ease-in-out;
             }
 
             #no-games{
@@ -345,6 +353,6 @@
             </div>
         </div>
         <iframe id="app" src="about:blank"></iframe>
-        <button id="back-to-lobby" title="Lobby">🌐</div>
+        <button id="back-to-lobby" title="Back to Lobby">↩</div>
     </body>
 </html>
