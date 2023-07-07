@@ -123,7 +123,7 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.subscribe("input", "pointerUp", this.doPointerUp);
         this.subscribe("input", "pointerMove", this.doPointerMove);
         this.subscribe("input", "tap", this.doPointerTap);
-        this.listen("doGodMode", this.doGodMode);
+        this.subscribe("all", "godModeChanged", this.doGodMode);
     }
 
     park() {
