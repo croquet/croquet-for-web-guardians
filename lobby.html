@@ -190,6 +190,17 @@
             <div id="intro"></div>
             <div id="games-container">
                 <button id="host-new">Host New Game</button>
+                <dialog id="host-dialog">
+                    <form>
+                        <h2>Host New Game</h2>
+                        <label for="name">Session name:</label>
+                        <input type="text" id="host-dialog-name" placeholder="My Game" required>
+                        <div>
+                            <button id="host-dialog-cancel" value="cancel" formmethod="dialog">Cancel</button>
+                            <button id="host-dialog-submit" type="submit">Enter Game</button>
+                        </div>
+                    </form>
+                </dialog>
                 <div id="games">
                     <p id="users"></p>
                     <ul id="sessions"></ul>

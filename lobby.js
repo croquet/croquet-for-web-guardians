@@ -277,7 +277,26 @@ class LobbyView extends Croquet.View {
 
         // Bind the "Host New Game" button
         const newGameButton = document.getElementById('host-new');
-        newGameButton.addEventListener("click", () => this.sessionClicked(null));
+        newGameButton.addEventListener("click", () => {
+            const dialog = document.getElementById('host-dialog');
+            const nameInput = document.getElementById('host-dialog-name');
+            const okButton = document.getElementById('host-dialog-submit');
+            const cancelButton = document.getElementById('host-dialog-cancel');
+            okButton.onclick = e => {
+                e.preventDefault();
+                const name = nameInput.value.trim();
+                if (name) dialog.close(name);
+            };
+            cancelButton.onclick = e => {
+                e.preventDefault();
+                dialog.close("");
+            };
+            dialog.onclose = () => {
+                const name = dialog.returnValue;
+                if (name) this.sessionClicked(name);
+            };
+            dialog.showModal();
+        });
 
         window.onmessage = e => {
             if (e.data && e.data.type === "croquet-lobby") {
@@ -378,8 +397,7 @@ class LobbyView extends Croquet.View {
     }
 
     sessionClicked(name) {
-        name = enterApp(name);
-        if (!name) return;
+        enterApp(name);
         clearInterval(this.interval);
         // possibly leave lobby session
         const session = this.model.sessions.get(name);
@@ -401,11 +419,6 @@ class LobbyView extends Croquet.View {
 //////////////////////////////
 
 function enterApp(name) {
-    // fixme: use a better UI
-    if (!name) {
-        name = prompt("Session Name");  // eslint-disable-line no-alert
-        if (!name) return "";
-    }
     // open app in iframe
     appSessionName = name;
     const iframe = document.getElementById("app");
