@@ -233,10 +233,17 @@ export class FireballPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.localChanged();
         this.refreshDrawTransform();
         if (this.fireball) {
-            let t=time-this.startTime;
+            const now = this.now(); // NB: time argument is not now()
+            const age = now-this.startTime;
+            // we want a fireball to destroy itself after 200ms
+            if (age > 200) {
+                this.destroy();
+                return;
+            }
+
             this.fireball.material.uniforms[ 'time' ].value = time*this.actor.timeScale;
             this.fireball.material.uniforms[ 'tOpacity' ].value = 0.25;
-            this.pointLight.intensity = 0.25+ 0.75* Math.sin(t*0.020)*Math.cos(t*0.007);
+            this.pointLight.intensity = 0.25+ 0.75* Math.sin(age*0.020)*Math.cos(age*0.007);
         }
     }
 
