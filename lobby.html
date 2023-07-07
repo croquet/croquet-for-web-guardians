@@ -111,8 +111,6 @@
                 background-color: rgba(255,255,255,75%);
                 border-radius: 10px;
                 padding: 30px;
-                min-height: 300px;
-
             }
 
             #games-container{
@@ -183,6 +181,100 @@
                 display: none;
             }
 
+            /*dialog*/
+            #host-dialog{
+                border-radius: 15px;
+                pointer-events: auto;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid rgba(0,0,0,.2);
+                border-radius: 0.3rem;
+                outline: 0;
+                -webkit-box-orient: vertical;
+                -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                flex-direction: column;
+            }
+
+            #host-contents{
+                padding: 40px;
+            }
+
+            .modal-header{
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: flex;
+                -webkit-box-align: start;
+                -ms-flex-align: start;
+                align-items: flex-start;
+                -webkit-box-pack: justify;
+                -ms-flex-pack: justify;
+                justify-content: space-between;
+                padding: 1rem;
+                border-bottom: 1px solid #e9ecef;
+                border-top-left-radius: 0.3rem;
+                border-top-right-radius: 0.3rem
+            }
+
+            dialog::backdrop{
+                background-color:rgba(0,0,0,0.4);
+            }
+
+            .host-new-title{
+                text-align: center;
+                font-size: 2rem;
+            }
+
+            .modal-footer{
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: flex;
+                -webkit-box-align: center;
+                -ms-flex-align: center;
+                align-items: center;
+                -webkit-box-pack: end;
+                -ms-flex-pack: end;
+                justify-content: flex-end;
+                padding: 1rem;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .close:not(:disabled):not(.disabled) {
+                cursor: pointer;
+            }
+            .modal-header .close {
+                padding: 1rem;
+                margin: -1rem -1rem -1rem auto;
+            }
+            button.close {
+                padding: 0;
+                background-color: transparent;
+                border: 0;
+                -webkit-appearance: none;
+            }
+
+            .close{
+                float: right;
+                font-size: 1.5rem;
+                font-weight: 700;
+                line-height: 1;
+                color: #000;
+                text-shadow: 0 1px 0 #fff;
+                opacity: .5;
+            }
+
+            .modal-title {
+                margin-bottom: 0;
+                line-height: 1.5;
+            }
+            .h5, h5 {
+                font-size: 1.25rem;
+            }
+
+            .modal-footer>:not(:last-child) {
+                margin-right: 0.25rem;
+            }
+
         </style>
     </head>
     <body>
@@ -191,15 +283,20 @@
             <div id="games-container">
                 <button id="host-new">Host New Game</button>
                 <dialog id="host-dialog">
-                    <form>
-                        <h2>Host New Game</h2>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Host New Game</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" fdprocessedid="bmtgwc">
+                          <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <form id="host-contents">
                         <label for="host-dialog-name">Game name:</label>
                         <input type="text" id="host-dialog-name" placeholder="My Game" required>
-                        <div>
-                            <button id="host-dialog-cancel" value="cancel" formmethod="dialog">Cancel</button>
-                            <button id="host-dialog-submit" type="submit">Enter Game</button>
-                        </div>
                     </form>
+                    <div class="modal-footer">
+                        <button id="host-dialog-cancel" value="cancel" formmethod="dialog">Cancel</button>
+                        <button id="host-dialog-submit" type="submit">Enter Game</button>
+                    </div>
                 </dialog>
                 <div id="games">
                     <p id="users"></p>
