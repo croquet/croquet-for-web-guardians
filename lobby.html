@@ -15,8 +15,9 @@
                 font-size: large;
             }
             button {
-                transition: all 0.1s ease-in-out;
+                cursor: pointer;
             }
+
             #intro {
                 height:100px;
                 width: 250px;
@@ -48,10 +49,6 @@
                 margin-top: 10px;
                 transition: all 0.2s ease-in-out;
                 border-radius: 5px;
-            }
-            #sessions > li:hover, button:hover  {
-                scale: 1.05;
-                box-shadow: 5px 5px 10px rgba(0,0,0,0.2);
             }
             .blue {
                 color: blue;
@@ -264,7 +261,7 @@
             }
 
             .modal-title {
-                margin-bottom: 0;
+                margin: 0;
                 line-height: 1.5;
             }
             .h5, h5 {
@@ -275,6 +272,47 @@
                 margin-right: 0.25rem;
             }
 
+            .btn-secondary {
+                color: #fff;
+                background-color: #6c757d;
+                border-color: #6c757d;
+            }
+            .btn {
+                display: inline-block;
+                font-weight: 400;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                border: 1px solid transparent;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+                transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            }
+
+            .btn-primary{
+                color: #fff;
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+
+            input{
+                width: 114px;
+                border-radius: 5px;
+                height: 36px;
+                width: 150px;
+                margin-left: 10px;
+                font-size: 20px;
+            }
+
+            #game-name{
+                font-size:20px;
+            }
         </style>
     </head>
     <body>
@@ -286,16 +324,16 @@
                     <div class="modal-header">
                         <h5 class="modal-title">Host New Game</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close" fdprocessedid="bmtgwc">
-                          <span aria-hidden="true">×</span>
+                          <span aria-hidden="true" class="host-dialog-cancel">×</span>
                         </button>
                     </div>
                     <form id="host-contents">
-                        <label for="host-dialog-name">Game name:</label>
+                        <label for="host-dialog-name" id="game-name">Game name:</label>
                         <input type="text" id="host-dialog-name" placeholder="My Game" required>
                     </form>
                     <div class="modal-footer">
-                        <button id="host-dialog-cancel" value="cancel" formmethod="dialog">Cancel</button>
-                        <button id="host-dialog-submit" type="submit">Enter Game</button>
+                        <button value="cancel" formmethod="dialog" class="btn btn-secondary host-dialog-cancel">Cancel</button>
+                        <button id="host-dialog-submit" type="submit" class="btn btn-primary">Enter Game</button>
                     </div>
                 </dialog>
                 <div id="games">
