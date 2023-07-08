@@ -18,6 +18,7 @@
     "eslint": "^8.43.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "file-loader": "^6.2.0",
+    "html-minimizer-webpack-plugin": "^4.4.0",
     "html-webpack-plugin": "^5.5.3",
     "inspectpack": "^4.7.1",
     "source-map-loader": "^4.0.1",

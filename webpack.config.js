@@ -1,4 +1,5 @@
 const HtmlWebPackPlugin = require('html-webpack-plugin');
+const HtmlMinimizerPlugin = require('html-minimizer-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -48,5 +49,10 @@ module.exports = {
             filename: 'index.html',   // output filename in dist/
             chunks: ['lobby'],
         }),
-    ]
+    ],
+    optimization: {
+        minimizer: [
+          new HtmlMinimizerPlugin(),
+        ],
+    },
 };
