@@ -329,20 +329,22 @@
             <div id="games-container">
                 <button id="host-new">Host New Game</button>
                 <dialog id="host-dialog">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Host New Game</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" fdprocessedid="bmtgwc">
-                          <span aria-hidden="true" class="host-dialog-cancel">×</span>
-                        </button>
-                    </div>
-                    <form id="host-contents">
-                        <label for="host-dialog-name" id="game-name">Game name:</label>
-                        <input type="text" id="host-dialog-name" placeholder="My Game" required>
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title">Host New Game</h5>
+                            <button type="button" class="close" aria-label="Close">
+                                <span aria-hidden="true" class="host-dialog-cancel">×</span>
+                            </button>
+                        </div>
+                        <div id="host-contents">
+                            <label for="host-dialog-name" id="game-name">Game name:</label>
+                            <input type="text" id="host-dialog-name" name="game-name" placeholder="My Game" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" value="cancel" class="btn btn-secondary host-dialog-cancel">Cancel</button>
+                            <button type="submit" value="default" id="host-dialog-submit" class="btn btn-primary">Enter Game</button>
+                        </div>
                     </form>
-                    <div class="modal-footer">
-                        <button value="cancel" formmethod="dialog" class="btn btn-secondary host-dialog-cancel">Cancel</button>
-                        <button id="host-dialog-submit" type="submit" class="btn btn-primary">Enter Game</button>
-                    </div>
                 </dialog>
                 <div id="games">
                     <p id="users"></p>
