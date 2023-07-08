@@ -428,11 +428,21 @@ class LobbyView extends Croquet.View {
 
 //////////////////////////////
 
+function setAppSrc(src) {
+    // to avoid getting two history entries, we can't just set iframe.src
+    // but we have to replace the iframe itself
+    const iframe = document.getElementById("app");
+    const parent = iframe.parentNode;
+    const newIframe = iframe.cloneNode();
+    newIframe.src = src;
+    parent.replaceChild(newIframe, iframe);
+    iframe.src = ""; // just in case
+}
+
 function enterApp(name) {
     // open app in iframe
     appSessionName = name;
-    const iframe = document.getElementById("app");
-    iframe.src = Croquet.Constants.AppUrl + `?session=${encodeURIComponent(name)}`;
+    setAppSrc(Croquet.Constants.AppUrl + `?session=${encodeURIComponent(name)}`);
     // hide lobby, show app
     document.body.classList.toggle("in-lobby", false);
     // update session URL and QR code and title
@@ -446,8 +456,7 @@ function enterApp(name) {
 function exitApp() {
     appSessionName = "";
     // close app in iframe
-    const iframe = document.getElementById("app");
-    iframe.src = "";
+    setAppSrc("");
     // hide app, show lobby
     document.body.classList.toggle("in-lobby", true);
     // update session URL and QR code and title
