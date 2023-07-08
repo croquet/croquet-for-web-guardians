@@ -281,21 +281,31 @@ class LobbyView extends Croquet.View {
             const dialog = document.getElementById('host-dialog');
             const nameInput = document.getElementById('host-dialog-name');
             const okButton = document.getElementById('host-dialog-submit');
-            const cancelButton = document.getElementById('host-dialog-cancel');
+            const cancelButtons = document.querySelectorAll('.host-dialog-cancel');
             okButton.onclick = e => {
                 e.preventDefault();
                 const name = nameInput.value.trim();
                 if (name) dialog.close(name);
             };
-            cancelButton.onclick = e => {
-                e.preventDefault();
-                dialog.close("");
-            };
-            dialog.onclose = () => {
+
+            for (const cancelButton of cancelButtons) {
+                cancelButton.onclick = e => {
+                    // pressing return in the name field triggers a click on the first cancel button?!
+                    if (!e.pointerType) okButton.onclick(e);
+                    else dialog.close("");
+                };
+            }
+
+            dialog.onclose = e => {
                 const name = dialog.returnValue;
-                if (name) this.sessionClicked(name);
+                if (name) {
+                    document.activeElement.blur(); // hide the keyboard
+                    this.sessionClicked(name);
+                }
             };
+
             dialog.showModal();
+            nameInput.focus();
         });
 
         window.onmessage = e => {
