@@ -290,8 +290,8 @@ class LobbyView extends Croquet.View {
 
             for (const cancelButton of cancelButtons) {
                 cancelButton.onclick = e => {
-                    // pressing return in the name field triggers a click on the first cancel button?!
-                    if (!e.pointerType) okButton.onclick(e);
+                    // in Chrome, pressing return in the name field triggers a click on the first cancel button?!
+                    if (!e.clientX) okButton.onclick(e);
                     else dialog.close("");
                 };
             }
