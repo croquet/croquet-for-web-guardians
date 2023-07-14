@@ -292,33 +292,31 @@ export class TowerPawn extends mix(Pawn).with(PM_Spatial, PM_ThreeVisible) {
 TowerPawn.register("TowerPawn");
 
 //------------------------------------------------------------------------------------------
-// InstancePawn ----------------------------------------------------------------------------
+// BollardPawn ----------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
-export class InstancePawn extends mix(Pawn).with(PM_Spatial, PM_ThreeInstanced) {
+export class BollardPawn extends mix(Pawn).with(PM_Spatial, PM_ThreeInstanced) {
 
     constructor(actor) {
         super(actor);
-        if (actor._viewObstacle) this.service("CollisionManager").colliders.add(this);
+        this.service("CollisionManager").colliders.add(this);
         this.future(100).setup();
     }
 
     setup() {
-        this.instance = this.useInstance(this.actor._instanceName);
+        this.instance = this.useInstance("bollard");
         if (this.instance) {
-            if (this.actor._perlin) {
-                const t = m4_getTranslation(this.global);
-                this.localTransform = m4_translation([0,perlin2D(t[0], t[2])-0.25,0]);
-                this.refreshDrawTransform();
-            }
+            const t = m4_getTranslation(this.global);
+            this.localTransform = m4_translation([0,perlin2D(t[0], t[2])-0.25,0]);
+            this.refreshDrawTransform();
         } else this.future(100).setup();
     }
 
     destroy() {
         super.destroy();
-        if (this.actor._viewObstacle) this.service("CollisionManager").colliders.delete(this);
+        this.service("CollisionManager").colliders.delete(this);
     }
 }
-InstancePawn.register("InstancePawn");
+BollardPawn.register("BollardPawn");
 
 //------------------------------------------------------------------------------------------
 // HealthCoinPawn ----------------------------------------------------------------------------
