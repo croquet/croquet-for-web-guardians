@@ -442,7 +442,8 @@ function setAppSrc(src) {
 function enterApp(name) {
     // open app in iframe
     appSessionName = name;
-    setAppSrc(Croquet.Constants.AppUrl + `?session=${encodeURIComponent(name)}`);
+    const params = window.location.search.slice(1);
+    setAppSrc(Croquet.Constants.AppUrl + `?session=${encodeURIComponent(name)}` + (params ? "&" + params : ""));
     // hide lobby, show app
     document.body.classList.toggle("in-lobby", false);
     // update session URL and QR code and title
@@ -473,8 +474,9 @@ function joinLobbyOnMessage(e) {
 
 function toggleLobbyOnHashChange() {
     appSessionName = window.location.hash.slice(1);
+    try { appSessionName = decodeURIComponent(appSessionName) } catch (e) { /* ignore */ }
     if (appSessionName) {
-        enterApp(decodeURIComponent(appSessionName));
+        enterApp(appSessionName);
     } else {
         exitApp();
         joinLobby();
