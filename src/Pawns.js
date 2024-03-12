@@ -59,6 +59,8 @@ import fireballTexture from "../assets/explosion.png";
 import * as fireballFragmentShader from "../assets/fireball.frag.js";
 import * as fireballVertexShader from "../assets/fireball.vert.js";
 
+import paper from "../assets/paper.jpg";
+
 const numbers = [];
 const skyscrapers = [];
 export const tank = [];
@@ -396,7 +398,11 @@ export class BasePawn extends mix(Pawn).with(PM_Spatial, PM_ThreeVisible) {
         const worldX = 512, worldZ=512;
         const cellSize = 2.5;
 
-        this.material = new THREE.MeshStandardMaterial( {color: new THREE.Color(0.8, 0.5, 0.2)} );
+        this.paperTexture = new THREE.TextureLoader().load( paper );
+        this.paperTexture.wrapS = THREE.RepeatWrapping;
+        this.paperTexture.wrapT = THREE.RepeatWrapping;
+        this.paperTexture.repeat.set( 1, 1 );
+        this.material = new THREE.MeshStandardMaterial( {color: new THREE.Color(0.8, 0.5, 0.2), map:this.paperTexture} );
         this.geometry = new THREE.PlaneGeometry(worldX*cellSize,worldZ*cellSize, worldX, worldZ);
         this.geometry.rotateX(toRad(-90));
 
