@@ -1,4 +1,4 @@
-const apiKey = ''; // <-- insert your API key from croquet.io/keys here
+const apiKey = '1JCMxHj2dLa5fl9y43cea9875jMH5gatNahzvHArm'; // <-- insert your API key from https://croquet.io/keys here
 
 export default { apiKey };
 
