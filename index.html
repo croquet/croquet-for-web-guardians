@@ -1,0 +1,366 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+        <title>Guardians Lobby</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                margin: 0;
+                padding: 0;
+                overflow-y: hidden;
+                box-sizing: border-box;
+            }
+            h2 {
+                font-size: large;
+            }
+            button {
+                cursor: pointer;
+            }
+
+            #intro {
+                height:100px;
+                width: 250px;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                background: url(<%= require('./assets/lobby-logo.png').default %>) no-repeat .5em;
+                background-size: cover;
+                margin-bottom: 30px;
+                margin-top: 30px;
+            }
+            #lobby {
+                display: none;
+            }
+            .in-lobby > #lobby {
+                display: block;
+            }
+            #sessions {
+                list-style: decimal inside;
+                margin: 0;
+                padding: 0;
+            }
+            #sessions > li {
+                cursor: pointer;
+                padding: 1em;
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+                margin-top: 10px;
+                transition: all 0.2s ease-in-out;
+                border-radius: 5px;
+            }
+            .blue {
+                color: blue;
+                background-color: lightskyblue;
+            }
+            .red {
+                color: crimson;
+                background-color: pink;
+            }
+            .yellow {
+                color: darkgoldenrod;
+                background-color: gold;
+            }
+            .green {
+                color: green;
+                background-color: lightgreen;
+            }
+            .black {
+                color: white;
+                background-color: darkgreen;
+            }
+            #app {
+                position: fixed;
+                top: 0;
+                left: 0;
+                border: none;
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+            .in-lobby > #app {
+                display: none;
+            }
+            #back-to-lobby {
+                position: fixed;
+                bottom: 10px;
+                right: 10px;
+                font-size: 20px;
+                cursor: pointer;
+                border: none;
+                border-radius: 412px;
+                opacity: 0.5;
+                height: 30px;
+                line-height: 10px;
+                font-weight: bold;
+            }
+            #back-to-lobby:hover {
+                scale: 1.2;
+                opacity: 1;
+            }
+            .in-lobby > #back-to-lobby {
+                display: none;
+            }
+            #croquet_dock {
+                display: none;
+            }
+            .in-lobby > #croquet_dock {
+                display: block;
+            }
+
+            #games{
+                width: 75%;
+                margin-left: auto;
+                margin-right: auto;
+                display: block;
+                background-color: rgba(255,255,255,75%);
+                border-radius: 10px;
+                padding: 30px;
+            }
+
+            #games-container{
+                background: url(<%= require('./assets/lobby-bg.jpg').default %>) no-repeat;
+                background-size: cover;
+                padding: 50px;
+                height: 100%;
+            }
+
+            #host-new{
+                color: #fff;
+                background-color: #EF493E;
+                border-color: #EF493E;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+                font-size: 1.3rem;
+                line-height: 1.5;
+                text-align: center;
+                white-space: nowrap;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                border: 1px solid transparent;
+                padding: 0.375rem 0.75rem;
+                border-radius: 0.25rem;
+                cursor: pointer;
+                margin-bottom: 30px;
+            }
+
+            #host-new:active{
+                background-color:#9c1b12;
+            }
+
+            p#users{
+                text-align: center;
+                margin-top: 0px;
+                font-weight: 600;
+                color: rgb(78, 78, 78);
+            }
+
+            #built-with{
+                background: url(<%= require('./assets/built-with-logo.png').default %>) no-repeat;
+                height: 40px;
+                width: 117px;
+                background-size: contain;
+                position: fixed;
+                top: 5;
+                right: 0;
+            }
+            #built-with:hover{
+                height: 45px;
+                width: 140px;
+                transition: all .2s ease-in-out;
+            }
+
+            #no-games{
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: #EF493E;
+                display: flex;
+                min-height: 300px;
+                margin: auto;
+                border-radius: 10px;
+                align-items: center;
+                justify-content: center;
+            }
+            #no-games.hidden {
+                display: none;
+            }
+
+            /*dialog*/
+            #host-dialog{
+                border-radius: 15px;
+                pointer-events: auto;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid rgba(0,0,0,.2);
+                border-radius: 0.3rem;
+                outline: 0;
+                -webkit-box-orient: vertical;
+                -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                flex-direction: column;
+            }
+
+            #host-contents{
+                padding: 40px;
+            }
+
+            .modal-header{
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: flex;
+                -webkit-box-align: start;
+                -ms-flex-align: start;
+                align-items: flex-start;
+                -webkit-box-pack: justify;
+                -ms-flex-pack: justify;
+                justify-content: space-between;
+                padding: 1rem;
+                border-bottom: 1px solid #e9ecef;
+                border-top-left-radius: 0.3rem;
+                border-top-right-radius: 0.3rem
+            }
+
+            dialog::backdrop{
+                background-color:rgba(0,0,0,0.4);
+            }
+
+            .host-new-title{
+                text-align: center;
+                font-size: 2rem;
+            }
+
+            .modal-footer{
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: flex;
+                -webkit-box-align: center;
+                -ms-flex-align: center;
+                align-items: center;
+                -webkit-box-pack: end;
+                -ms-flex-pack: end;
+                justify-content: flex-end;
+                padding: 1rem;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .close:not(:disabled):not(.disabled) {
+                cursor: pointer;
+            }
+            .modal-header .close {
+                padding: 1rem;
+                margin: -1rem -1rem -1rem auto;
+            }
+            button.close {
+                padding: 0;
+                background-color: transparent;
+                border: 0;
+                -webkit-appearance: none;
+            }
+
+            .close{
+                float: right;
+                font-size: 1.5rem;
+                font-weight: 700;
+                line-height: 1;
+                color: #000;
+                text-shadow: 0 1px 0 #fff;
+                opacity: .5;
+            }
+
+            .modal-title {
+                margin: 0;
+                line-height: 1.5;
+            }
+            .h5, h5 {
+                font-size: 1.25rem;
+            }
+
+            .modal-footer>:not(:last-child) {
+                margin-right: 0.25rem;
+            }
+
+            .btn-secondary {
+                color: #fff;
+                background-color: #6c757d;
+                border-color: #6c757d;
+            }
+            .btn {
+                display: inline-block;
+                font-weight: 400;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                border: 1px solid transparent;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+                transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            }
+
+            .btn-primary{
+                color: #fff;
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+
+            input{
+                width: 114px;
+                border-radius: 5px;
+                height: 36px;
+                width: 150px;
+                margin-left: 10px;
+                font-size: 20px;
+            }
+
+            #game-name{
+                font-size:20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="lobby">
+            <div id="intro"></div>
+            <div id="games-container">
+                <button id="host-new">Host New Game</button>
+                <dialog id="host-dialog">
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title">Host New Game</h5>
+                            <button type="button" class="close" aria-label="Close">
+                                <span aria-hidden="true" class="host-dialog-cancel">×</span>
+                            </button>
+                        </div>
+                        <div id="host-contents">
+                            <label for="host-dialog-name" id="game-name">Game name:</label>
+                            <input type="text" id="host-dialog-name" name="game-name" placeholder="My Game" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" value="cancel" class="btn btn-secondary host-dialog-cancel">Cancel</button>
+                            <button type="submit" value="default" id="host-dialog-submit" class="btn btn-primary">Enter Game</button>
+                        </div>
+                    </form>
+                </dialog>
+                <div id="games">
+                    <p id="users"></p>
+                    <ul id="sessions"></ul>
+                    <p id="no-games">No games found</p>
+                </div>
+                <a href="https://github.com/croquet/croquet-for-web-guardians" target="_blank"><div id="built-with"></div></a>
+            </div>
+        </div>
+        <iframe id="app" src="about:blank"></iframe>
+        <button id="back-to-lobby" title="Back to Lobby">↩</div>
+    </body>
+</html>
