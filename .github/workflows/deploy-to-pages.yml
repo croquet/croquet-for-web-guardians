@@ -1,0 +1,71 @@
+# Workflow to deploy to GitHub Pages
+
+# NOTE: to make this work, in GitHub Settings under Pages – Build and Deployment
+# change Source from "Deploy from a branch" to "GitHub Actions"!
+
+name: Deploy to Pages
+
+on:
+  # Runs on pushes to these branches
+  push:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    # only run on main repo, not forks
+    if: github.repository == 'croquet/croquet-for-web-guardians'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # vars defined in https://github.com/croquet/croquet-for-web-guardians/settings/variables/actions
+      - name: Create apiKey.js from API_KEY repo var
+        run: |
+          echo 'export default {apiKey: "${{ vars.API_KEY }}"};' > apiKey.js
+
+      # Install dependencies
+      - name: Install app dependencies
+        run: npm ci
+
+      # Build the app
+      - name: Build app
+        run: npm run build
+
+      - name: Upload dist
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
