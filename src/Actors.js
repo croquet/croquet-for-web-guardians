@@ -4,7 +4,7 @@
 // The flat world is placed on a Perlin noise generated surface in the view, but all interactions including
 // driving and collisions are computed in 2D.
 
-import { ModelRoot, Actor, mix, AM_Spatial, AM_Behavioral, v3_add, v3_sub, v3_scale, UserManager, User, AM_Avatar, q_axisAngle, v3_normalize, v3_rotate, AM_Grid, AM_OnGrid } from "@croquet/worldcore-kernel"; // eslint-disable-line import/no-extraneous-dependencies
+import { ModelRoot, Actor, mix, AM_Spatial, AM_Behavioral, v3_add, v3_sub, UserManager, User, AM_Avatar, q_axisAngle, v3_normalize, v3_rotate, AM_Grid, AM_OnGrid } from "@croquet/worldcore-kernel"; // eslint-disable-line import/no-extraneous-dependencies
 
 const v_dist2Sqr = function (a,b) {
     const dx = a[0] - b[0];
@@ -232,6 +232,7 @@ class MissileActor extends mix(Actor).with(AM_Spatial, AM_Behavioral) {
                     if (this.go) this.go.destroy();
                     this.go = this.behavior.start({name: "GoBehavior", aim, speed: missileSpeed, tickRate: 20});
                     this.ballisticVelocity = aim.map(val => val * missileSpeed);
+                    this.say("bounce");
                 }
             }
         }
@@ -272,6 +273,7 @@ class AvatarActor extends mix(Actor).with(AM_Spatial, AM_Avatar, AM_OnGrid) {
         const missile = MissileActor.create({parent: this.parent, translation, colorIndex: this.colorIndex});
         missile.go = missile.behavior.start({name: "GoBehavior", aim, speed: missileSpeed, tickRate: 20});
         missile.ballisticVelocity = aim.map(val => val * missileSpeed);
+        this.say("didShoot");
     }
 
     resetGame() { // don't go home at end of game
@@ -325,7 +327,6 @@ MyUserManager.register('MyUserManager');
 class MyUser extends User {
     init(options) {
         super.init(options);
-        console.log(options);
         const base = this.wellKnownModel("ModelRoot").base;
 
         const placementAngle = Math.random() * Math.PI * 2;
@@ -579,15 +580,24 @@ export class MyModelRoot extends ModelRoot {
 
         const r = this.spawnRadius; // radius of spawn
         const a = Math.PI*2*Math.random(); // come from random direction
-        for (let n = 0; n<actualBots; n++) {
+        let xx = 0, yy = 0;
+
+        for (let n = 0; n<actualBots-1; n++) {
             const aa = a + (0.5-Math.random())*Math.PI/4; // angle +/- Math.PI/4 around r
             const rr = r+100*Math.random();
             const x = Math.sin(aa)*rr;
             const y = Math.cos(aa)*rr;
+            xx += x;
+            yy += y;
             const index = Math.floor(20*Math.random());
             // stagger when the bots get created
-            this.future(Math.floor(Math.random()*200)).makeBot(x, y, index);
+            this.future(Math.floor(Math.random()*200)).makeBot(x, y, index, false);
         }
+        // create the last bot in the center of the group. This is the one that plays the group sound
+        xx /= (actualBots-1);
+        yy /= (actualBots-1);
+        this.future(Math.floor(Math.random()*200)).makeBot(xx, yy, Math.floor(20*Math.random()), true);
+
         if (wave>0) this.future(30000).makeWave(wave+1, Math.floor(numBots*1.2), key);
 
         this.publish("bots", "madeWave", { wave, addedBots: actualBots });
@@ -602,8 +612,8 @@ export class MyModelRoot extends ModelRoot {
         return tower;
     }
 
-    makeBot(x, z, index) {
-        const bot = BotActor.create({parent: this.base, tags: ["block", "bot"], index, radius: 2, translation: [x, 0.5, z]});
+    makeBot(x, z, index, centerBot = false) {
+        const bot = BotActor.create({parent: this.base, tags: ["block", "bot"], index, radius: 2, translation: [x, 0.5, z], centerBot});
         return bot;
     }
 }

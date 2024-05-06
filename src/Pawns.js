@@ -28,7 +28,6 @@ import { HUD } from "@croquet/worldcore-widget2";
 import { HUDWidget } from "./Pawns-HUD";
 import /* { AvatarPawn } from */ "./Pawns-Avatar"; // referenced by name in AvatarActor
 
-
 // Illustration 112505376 / 360 Sky © Planetfelicity | Dreamstime.com
 import sky from "../assets/alienSky1.jpg";
 
@@ -61,9 +60,14 @@ import * as fireballVertexShader from "../assets/fireball.vert.js";
 
 import paper from "../assets/paper.jpg";
 
+import explosion from "../assets/Audio/explosion.wav";
+import bounce from "../assets/Audio/bump.mp3";
+import botViolins from "../assets/Audio/violinPluckLoop.mp3";
+
 const numbers = [];
 const skyscrapers = [];
 export const tank = [];
+import {MAX_USERS} from "../lobby";
 
 export const UserColors = [
     rgb(64, 206, 64),          // green
@@ -164,6 +168,7 @@ export class BotPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         super(actor);
         const t = this.translation;
         t[1]=perlin2D(t[0], t[2])+2;
+        this.centerBot = actor._centerBot;
         this.makeBot();
     }
 
@@ -190,11 +195,30 @@ export class BotPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.botEye = new THREE.Mesh( botEyeGeo, botEyeMaterial );
         this.botBody.add(this.botEye);
         this.setRenderObject(this.botBody);
+        if (this.centerBot) this.playGroupSound(this.botBody);
     }
 
+    playGroupSound(parent3D) {
+        console.log("playGroupSound");
+        this.audioLoader = new THREE.AudioLoader();
+        this.audioLoader.load( botViolins, buffer => {
+            const rm = this.service("ThreeRenderManager");
+            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
+            this.mySound.setBuffer( buffer );
+            this.mySound.setVolume( 1 );
+            this.mySound.setRefDistance( 8  );
+            this.mySound.setLoop(true);
+            parent3D.add(this.mySound);
+            this.mySound.play();
+        });
+    }
     destroy() {
         super.destroy();
         if (this.botBody) {
+            if (this.mySound) {
+                this.mySound.removeFromParent();
+                this.mySound.disconnect();
+            }
             this.botBody.geometry.dispose();
             this.botBody.material.dispose();
             this.botEye.geometry.dispose();
@@ -226,6 +250,21 @@ export class FireballPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.pointLight = new THREE.PointLight(0xff8844, 1, 4, 2);
         this.fireball.add(this.pointLight);
         this.setRenderObject(this.fireball);
+        this.audioLoader = new THREE.AudioLoader();
+        this.playSoundOneShot(explosion, this.fireball);
+    }
+
+    playSoundOneShot(soundURL, parent3D) {
+        if (!parent3D) return;
+        this.audioLoader.load( soundURL, buffer => {
+            if (this.mySound) this.mySound.removeFromParent();
+            const rm = this.service("ThreeRenderManager");
+            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
+            this.mySound.setBuffer( buffer );
+            this.mySound.setVolume( 0.5 );
+            parent3D.add(this.mySound);
+            this.mySound.play();
+        });
     }
 
     update(time, delta) {
@@ -439,8 +478,26 @@ export class MissilePawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         const mesh = new THREE.Mesh( this.geometry, this.material );
         mesh.castShadow = true;
         this.setRenderObject(mesh);
+        this.listen("bounce", this.bounceSound);
+        this.audioLoader = new THREE.AudioLoader();
     }
 
+    bounceSound() {
+        this.playSoundOneShot(bounce, this.renderObject);
+    }
+
+    playSoundOneShot(soundURL, parent3D) {
+        if (!parent3D) return;
+        this.audioLoader.load( soundURL, buffer => {
+            if (this.mySound) this.mySound.removeFromParent();
+            const rm = this.service("ThreeRenderManager");
+            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
+            this.mySound.setBuffer( buffer );
+            this.mySound.setVolume( 0.5 );
+            parent3D.add(this.mySound);
+            this.mySound.play();
+        });
+    }    
     destroy() {
         super.destroy();
         this.geometry.dispose();
@@ -511,12 +568,15 @@ class LobbyRelayPawn extends Pawn {
             if (unknown) description += " and elsewhere";
         }
         const { health, demoMode } = this.wellKnownModel("modelRoot").gameState;
-        description += demoMode ? " [demo]" : health ? ` [health: ${health}]` : " [ready to play]";
+        description += demoMode ? " [demo]" : health ? ` [health: ${health}]` : " [waiting to play]";
+        if (this.model.viewIds.size >= MAX_USERS) description += " SESSION FULL";
+            // description += " [full]";
         const users = {
             count: this.model.viewIds.size,
             description,
             color: demoMode ? "blue" : health>66 ? "green" : health>33 ? "yellow" : health>0 ? "red" : "black",
         };
+
         window.parent.postMessage({type: "croquet-lobby", name: this.session.name, users}, "*");
         // console.log("relay", this.viewId, "sending croquet-lobby", this.session.name, users);
     }
@@ -551,6 +611,9 @@ export class MyViewRoot extends ViewRoot {
         this.buildInstances();
         const hud = this.service("HUD");
         new HUDWidget({parent: hud.root, autoSize: [1,1]});
+        const rm = this.service("ThreeRenderManager");
+        rm.listener = new THREE.AudioListener();
+        rm.camera.add( rm.listener );
     }
 
     buildLights() {

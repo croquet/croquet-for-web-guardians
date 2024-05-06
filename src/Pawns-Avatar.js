@@ -9,6 +9,9 @@ import { Pawn, mix, PM_Avatar, PM_Smoothed, toRad,
 import { PM_ThreeVisible, PM_ThreeInstanced, PM_ThreeCamera, THREE } from "@croquet/worldcore-three";
 
 import { sunLight, sunBase, perlin2D, tank, UserColors } from "./Pawns";
+
+import shootSound from "../assets/Audio/shot1.wav";
+
 const cameraOffset = [0,12,20];
 const fixedPitch = toRad(-10);
 const pitchQ = q_axisAngle([1,0,0], fixedPitch);
@@ -54,6 +57,21 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.service("CollisionManager").colliders.add(this);
         this.listen("goHome", this.goHome);
         this.loadTank();
+        this.listen("didShoot", this.didShoot);
+        this.audioLoader = new THREE.AudioLoader();
+    }
+
+    playSoundOneShot(soundURL, parent3D) {
+        if (!parent3D) return;
+        this.audioLoader.load( soundURL, buffer => {
+            if (this.mySound) this.mySound.removeFromParent();
+            const rm = this.service("ThreeRenderManager");
+            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
+            this.mySound.setBuffer( buffer );
+            this.mySound.setVolume( 1 );
+            parent3D.add(this.mySound);
+            this.mySound.play();
+        });
     }
 
     loadTank() {
@@ -132,13 +150,21 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.steer = 0;
         this.speed = 0;
         this.highGear = 1;
+
         this.unsubscribe("input", "keyDown", this.keyDown);
         this.unsubscribe("input", "keyUp", this.keyUp);
         // this.unsubscribe("input", "pointerMove", this.doPointerMove);
     }
 
+    didShoot() {
+        if (this.isMyAvatar) return; // only play the sound if it is not your avatar
+        //this.shootSound.stop();
+        this.playSoundOneShot(shootSound, this.tank);
+    }
+
     shoot() {
         if (this.now()-this.lastShootTime > this.waitShootTime) {
+            this.playSoundOneShot(shootSound, this.tank);
             this.lastShootTime = this.now();
             // send a message with four numbers: launch position x, y, z and yaw
             const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time

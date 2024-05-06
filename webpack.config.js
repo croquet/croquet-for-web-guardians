@@ -30,7 +30,7 @@ module.exports = {
                 use: ["source-map-loader"],
             },
             {
-                test: /\.(png|svg|jpg|jpeg|gif|mp3|fbx|otf|glb|gltf|avif|hdr|exr|aac)$/,
+                test: /\.(png|svg|jpg|jpeg|gif|mp3|wav|ogg|fbx|otf|glb|gltf|avif|hdr|exr|aac)$/,
                 loader: 'file-loader',
                 options: {
                     name: '[contenthash:8].[ext]',

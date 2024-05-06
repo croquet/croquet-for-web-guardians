@@ -1,5 +1,7 @@
 import * as Croquet from "@croquet/worldcore-kernel";
 import apiKey from "./apiKey";
+import buttonFail from "./assets/Audio/ShootFail.wav";
+import engineStart from "./assets/Audio/avatarEnter.wav";
 
 // Lobby is a simple session manager for Croquet apps.
 // When a user joins the lobby, they see a list of sessions.
@@ -37,6 +39,7 @@ let appSessionName = window.location.hash.slice(1);
 try { appSessionName = decodeURIComponent(appSessionName) } catch (e) { /* ignore */ }
 
 const SESSION_TIMEOUT = 5; // seconds
+export const MAX_USERS = 8; // max users in a session
 
 class Lobby extends Croquet.Model {
 
@@ -269,6 +272,7 @@ Lobby.register("Lobby");
 class LobbyView extends Croquet.View {
     constructor(model) {
         super(model);
+        this.maxUsers = MAX_USERS;
         this.model = model;
         this.subscribe(this.sessionId, "relay-changed", this.relayChanged);
         this.subscribe(this.sessionId, "session-changed", this.showSessions);
@@ -407,16 +411,20 @@ class LobbyView extends Croquet.View {
     }
 
     sessionClicked(name) {
-        enterApp(name);
-        clearInterval(this.interval);
-        // possibly leave lobby session
         const session = this.model.sessions.get(name);
-        if (session) {
-            const relay = session.relay;
-            if (relay.viewId !== this.viewId) {
-                this.relayChanged({ name, viewId: relay.viewId });
+        console.log("------- session: ", session);
+        if ((session && this.maxUsers > session.users.count) || !session) {
+            new Audio(engineStart).play();
+            enterApp(name);
+            clearInterval(this.interval);
+            // possibly leave lobby session
+            if (session) {
+                const relay = session.relay;
+                if (relay.viewId !== this.viewId) {
+                    this.relayChanged({ name, viewId: relay.viewId });
+                }
             }
-        }
+        } else  new Audio(buttonFail).play();
     }
 
     detach() {
