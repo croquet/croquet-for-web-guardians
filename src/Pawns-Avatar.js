@@ -27,6 +27,32 @@ const maxDistSqr = maxDist*maxDist;
 const v_sub2 = function (a,b) {
     return [a[0]-b[0], 0, a[2]-b[2]];
 };
+
+let soundSwitch = true; // turn sound on and off
+const listener = new THREE.AudioListener();
+
+export const playSound = function() {
+    const audioLoader = new THREE.AudioLoader();
+
+    function play(soundURL, parent3D, loop = false) {
+
+        if (!soundSwitch) return;
+        audioLoader.load( soundURL, buffer => {
+
+            const mySound = new THREE.PositionalAudio( listener );  // listener is a global
+            mySound.setBuffer( buffer );
+            mySound.setVolume( 1 );
+            mySound.setRefDistance( 4 );
+            mySound.setLoop(loop);
+            parent3D.add(mySound);
+            parent3D.mySound = mySound;
+            mySound.onEnded = ()=> {mySound.removeFromParent();};
+            mySound.play();
+        });
+    }
+    return play;
+}();
+
 //------------------------------------------------------------------------------------------
 // AvatarPawn
 // The avatar is designed to instantly react to user input and the publish those changes
@@ -58,20 +84,6 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.listen("goHome", this.goHome);
         this.loadTank();
         this.listen("didShoot", this.didShoot);
-        this.audioLoader = new THREE.AudioLoader();
-    }
-
-    playSoundOneShot(soundURL, parent3D) {
-        if (!parent3D) return;
-        this.audioLoader.load( soundURL, buffer => {
-            if (this.mySound) this.mySound.removeFromParent();
-            const rm = this.service("ThreeRenderManager");
-            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
-            this.mySound.setBuffer( buffer );
-            this.mySound.setVolume( 1 );
-            parent3D.add(this.mySound);
-            this.mySound.play();
-        });
     }
 
     loadTank() {
@@ -101,6 +113,9 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
             this.tank.add(this.tankBody);
             if (this.isMyAvatar) sunLight.target = this.tank; //this.instance; // sunLight is a global
             this.setRenderObject(this.tank);
+            const rm = this.service("ThreeRenderManager");
+            rm.camera.add( listener );
+            rm.listener = listener;
 
         } else this.future(100).loadTank();
     }
@@ -159,12 +174,12 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
     didShoot() {
         if (this.isMyAvatar) return; // only play the sound if it is not your avatar
         //this.shootSound.stop();
-        this.playSoundOneShot(shootSound, this.tank);
+        playSound(shootSound, this.tank);
     }
 
     shoot() {
         if (this.now()-this.lastShootTime > this.waitShootTime) {
-            this.playSoundOneShot(shootSound, this.tank);
+            playSound(shootSound, this.tank);
             this.lastShootTime = this.now();
             // send a message with four numbers: launch position x, y, z and yaw
             const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time
@@ -186,6 +201,10 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 break;
             case 'z': case 'Z':
                 if (this.developerMode === 2 || this.developerMode === 3 ) this.developerMode++;
+                break;
+            case '/':
+                soundSwitch = !soundSwitch; // toggle sound on and off
+                console.log( "sound is " + soundSwitch);
                 break;
             case "ArrowUp": case "W": case "w":
                 this.gas = 1; break;

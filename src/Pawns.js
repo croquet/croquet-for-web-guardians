@@ -26,7 +26,7 @@ import { ViewRoot, ViewService, Pawn, mix, InputManager, PM_Smoothed, PM_Spatial
 import { ThreeInstanceManager, PM_ThreeInstanced, PM_ThreeVisible, THREE, GLTFLoader, ThreeRenderManager, ThreeRaycast } from "@croquet/worldcore-three";
 import { HUD } from "@croquet/worldcore-widget2";
 import { HUDWidget } from "./Pawns-HUD";
-import /* { AvatarPawn } from */ "./Pawns-Avatar"; // referenced by name in AvatarActor
+import { playSound } from "./Pawns-Avatar";
 
 // Illustration 112505376 / 360 Sky © Planetfelicity | Dreamstime.com
 import sky from "../assets/alienSky1.jpg";
@@ -67,7 +67,10 @@ import botViolins from "../assets/Audio/violinPluckLoop.mp3";
 const numbers = [];
 const skyscrapers = [];
 export const tank = [];
-import {MAX_USERS} from "../lobby";
+
+const MAX_USERS = 8;
+
+console.log("MAX_USERS", MAX_USERS);
 
 export const UserColors = [
     rgb(64, 206, 64),          // green
@@ -195,23 +198,9 @@ export class BotPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.botEye = new THREE.Mesh( botEyeGeo, botEyeMaterial );
         this.botBody.add(this.botEye);
         this.setRenderObject(this.botBody);
-        if (this.centerBot) this.playGroupSound(this.botBody);
+        if (this.centerBot) playSound(botViolins, this.botBody, true);
     }
 
-    playGroupSound(parent3D) {
-        console.log("playGroupSound");
-        this.audioLoader = new THREE.AudioLoader();
-        this.audioLoader.load( botViolins, buffer => {
-            const rm = this.service("ThreeRenderManager");
-            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
-            this.mySound.setBuffer( buffer );
-            this.mySound.setVolume( 1 );
-            this.mySound.setRefDistance( 8  );
-            this.mySound.setLoop(true);
-            parent3D.add(this.mySound);
-            this.mySound.play();
-        });
-    }
     destroy() {
         super.destroy();
         if (this.botBody) {
@@ -223,6 +212,7 @@ export class BotPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
             this.botBody.material.dispose();
             this.botEye.geometry.dispose();
             this.botEye.material.dispose();
+            if (this.botBody.mySound) this.botBody.mySound.disconnect();
             this.botBody = null;
         }
     }
@@ -251,20 +241,7 @@ export class FireballPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.fireball.add(this.pointLight);
         this.setRenderObject(this.fireball);
         this.audioLoader = new THREE.AudioLoader();
-        this.playSoundOneShot(explosion, this.fireball);
-    }
-
-    playSoundOneShot(soundURL, parent3D) {
-        if (!parent3D) return;
-        this.audioLoader.load( soundURL, buffer => {
-            if (this.mySound) this.mySound.removeFromParent();
-            const rm = this.service("ThreeRenderManager");
-            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
-            this.mySound.setBuffer( buffer );
-            this.mySound.setVolume( 0.5 );
-            parent3D.add(this.mySound);
-            this.mySound.play();
-        });
+        playSound(explosion, this.fireball);
     }
 
     update(time, delta) {
@@ -483,21 +460,9 @@ export class MissilePawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
     }
 
     bounceSound() {
-        this.playSoundOneShot(bounce, this.renderObject);
+        playSound(bounce, this.renderObject);
     }
 
-    playSoundOneShot(soundURL, parent3D) {
-        if (!parent3D) return;
-        this.audioLoader.load( soundURL, buffer => {
-            if (this.mySound) this.mySound.removeFromParent();
-            const rm = this.service("ThreeRenderManager");
-            this.mySound = new THREE.PositionalAudio( rm.listener );  // listener is a global
-            this.mySound.setBuffer( buffer );
-            this.mySound.setVolume( 0.5 );
-            parent3D.add(this.mySound);
-            this.mySound.play();
-        });
-    }    
     destroy() {
         super.destroy();
         this.geometry.dispose();
@@ -611,9 +576,6 @@ export class MyViewRoot extends ViewRoot {
         this.buildInstances();
         const hud = this.service("HUD");
         new HUDWidget({parent: hud.root, autoSize: [1,1]});
-        const rm = this.service("ThreeRenderManager");
-        rm.listener = new THREE.AudioListener();
-        rm.camera.add( rm.listener );
     }
 
     buildLights() {
