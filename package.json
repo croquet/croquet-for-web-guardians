@@ -10,9 +10,9 @@
   "author": "Croquet Corporation",
   "license": "Apache-2.0",
   "dependencies": {
-    "@croquet/worldcore-kernel": "^2.0.0-alpha.14",
-    "@croquet/worldcore-three": "^2.0.0-alpha.14",
-    "@croquet/worldcore-widget2": "^2.0.0-alpha.14"
+    "@croquet/worldcore-kernel": "^2.0.0-alpha.18",
+    "@croquet/worldcore-three": "^2.0.0-alpha.18",
+    "@croquet/worldcore-widget2": "^2.0.0-alpha.18"
   },
   "devDependencies": {
     "eslint": "^8.43.0",
