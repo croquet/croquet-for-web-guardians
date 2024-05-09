@@ -236,7 +236,7 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 this.turn = 1; break;
             case "ArrowRight": case "D": case "d":
                 this.turn = -1; break;
-            case "M": case "m":
+            case "O": case "o":
                 if (this.developerMode === 5) this.auto = !this.auto; break;
             case "H": case "h":
                 if (this.developerMode === 5) this.goHome(); break;
@@ -303,6 +303,10 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 soundSwitch = !soundSwitch; // toggle sound on and off
                 soundLoops.forEach( sound => {if (soundSwitch) sound.play(); else sound.pause();} );
                 console.log( "sound is " + soundSwitch);
+                break;
+            case 'm': case 'M':
+                console.log("pause/play music");
+                soundLoops.forEach( sound => {if (sound.isPlaying) sound.pause(); else sound.play();} );
                 break;
             default:
         }
