@@ -35,6 +35,8 @@ let soundCount = 0;
 const maxSound = 32;
 const listener = new THREE.AudioListener();
 const soundList = {};
+const soundLoops = [];
+const loopSoundVolume = 0.25;
 export const playSound = function() {
     const audioLoader = new THREE.AudioLoader();
 
@@ -63,7 +65,8 @@ function playSoundOnce(buffer, parent3D, force, loop = false) {
     }
     else {
         mySound = new THREE.Audio( listener );
-        mySound.setVolume( volume/10 );
+        mySound.setVolume( volume * loopSoundVolume );
+        soundLoops.push(mySound);
     }
 
     mySound.setBuffer( buffer );
@@ -225,10 +228,6 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
             case 'z': case 'Z':
                 if (this.developerMode === 2 || this.developerMode === 3 ) this.developerMode++;
                 break;
-            case '/':
-                soundSwitch = !soundSwitch; // toggle sound on and off
-                console.log( "sound is " + soundSwitch);
-                break;
             case "ArrowUp": case "W": case "w":
                 this.gas = 1; break;
             case "ArrowDown": case "S": case "s":
@@ -294,9 +293,16 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 break;
             case '-': case '_':
                 volume = Math.max(0, volume - 0.1);
+                soundLoops.forEach( sound => sound.setVolume(volume * loopSoundVolume) );
                 break;
             case '+': case '=':
                 volume = Math.min(1, volume + 0.1);
+                soundLoops.forEach( sound => sound.setVolume(volume * loopSoundVolume) );
+                break;
+            case '/':
+                soundSwitch = !soundSwitch; // toggle sound on and off
+                soundLoops.forEach( sound => {if (soundSwitch) sound.play(); else sound.pause();} );
+                console.log( "sound is " + soundSwitch);
                 break;
             default:
         }
