@@ -389,7 +389,9 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
     }
 
     doPointerTap() {
+        this.shootNow = true;
         this.shoot();
+        this.shootNow = false;
     }
 
     update(time, delta) {
