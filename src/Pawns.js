@@ -62,7 +62,8 @@ import paper from "../assets/paper.jpg";
 
 import explosion from "../assets/Audio/explosion.wav";
 import bounce from "../assets/Audio/bump.mp3";
-import botViolins from "../assets/Audio/violinPluckLoop.mp3";
+// import botViolins from "../assets/Audio/violinPluckLoop.mp3";
+import botBeep from "../assets/Audio/Rhythmic Bleeps.wav";
 
 const numbers = [];
 const skyscrapers = [];
@@ -173,6 +174,11 @@ export class BotPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         t[1]=perlin2D(t[0], t[2])+2;
         this.centerBot = actor._centerBot;
         this.makeBot();
+        this.listen("beep", this.beep);
+    }
+
+    beep() {
+        playSound(botBeep, this.botBody, false);
     }
 
     update(time, delta) {
@@ -198,7 +204,7 @@ export class BotPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.botEye = new THREE.Mesh( botEyeGeo, botEyeMaterial );
         this.botBody.add(this.botEye);
         this.setRenderObject(this.botBody);
-        if (this.centerBot) playSound(botViolins, this.botBody, true);
+        //if (this.centerBot) playSound(botViolins, this.botBody, true);
     }
 
     destroy() {
@@ -241,7 +247,7 @@ export class FireballPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.fireball.add(this.pointLight);
         this.setRenderObject(this.fireball);
         this.audioLoader = new THREE.AudioLoader();
-        playSound(explosion, this.fireball);
+        playSound(explosion, this.fireball, true);
     }
 
     update(time, delta) {
@@ -460,7 +466,7 @@ export class MissilePawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
     }
 
     bounceSound() {
-        playSound(bounce, this.renderObject);
+        playSound(bounce, this.renderObject, true);
     }
 
     destroy() {

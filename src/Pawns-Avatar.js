@@ -11,6 +11,7 @@ import { PM_ThreeVisible, PM_ThreeInstanced, PM_ThreeCamera, THREE } from "@croq
 import { sunLight, sunBase, perlin2D, tank, UserColors } from "./Pawns";
 
 import shootSound from "../assets/Audio/shot1.wav";
+import battleground from "../assets/Audio/Digital Battleground.mp3";
 
 const cameraOffset = [0,12,20];
 const fixedPitch = toRad(-10);
@@ -29,30 +30,52 @@ const v_sub2 = function (a,b) {
 };
 
 let soundSwitch = true; // turn sound on and off
+let volume = 1;
+let soundCount = 0;
+const maxSound = 32;
 const listener = new THREE.AudioListener();
-
+const soundList = {};
 export const playSound = function() {
     const audioLoader = new THREE.AudioLoader();
 
-    function play(soundURL, parent3D, loop = false) {
+    function play(soundURL, parent3D, force, loop = false) {
 
         if (!soundSwitch) return;
-        audioLoader.load( soundURL, buffer => {
-
-            const mySound = new THREE.PositionalAudio( listener );  // listener is a global
-            mySound.setBuffer( buffer );
-            mySound.setVolume( 1 );
-            mySound.setRefDistance( 4 );
-            mySound.setLoop(loop);
-            parent3D.add(mySound);
-            parent3D.mySound = mySound;
-            mySound.onEnded = ()=> {mySound.removeFromParent();};
-            mySound.play();
-        });
+        if (soundList[soundURL]) playSoundOnce(soundList[soundURL], parent3D, force, loop);
+        else {
+            audioLoader.load( soundURL, buffer => {
+                soundList[soundURL] = buffer;
+                playSoundOnce(buffer, parent3D, force, loop);
+            });
+        }
     }
     return play;
 }();
 
+function playSoundOnce(buffer, parent3D, force, loop = false) {
+    if (!force && soundCount>maxSound) return;
+    soundCount++;
+    let mySound;
+    if (parent3D) {
+        mySound = new THREE.PositionalAudio( listener );  // listener is a global
+        mySound.setRefDistance( 8 );
+        mySound.setVolume( volume );
+    }
+    else {
+        mySound = new THREE.Audio( listener );
+        mySound.setVolume( volume/10 );
+    }
+
+    mySound.setBuffer( buffer );
+    mySound.setLoop(loop);
+    if (parent3D) {
+        parent3D.add(mySound);
+        parent3D.mySound = mySound;
+        mySound.onEnded = ()=> { soundCount--; mySound.removeFromParent(); };
+    }
+    mySound.play();
+
+}
 //------------------------------------------------------------------------------------------
 // AvatarPawn
 // The avatar is designed to instantly react to user input and the publish those changes
@@ -66,7 +89,6 @@ export const playSound = function() {
 export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_Avatar, PM_ThreeCamera, PM_ThreeInstanced) {
 
     constructor(actor) {
-        console.log("CONSTRUCT AVATAR")
         super(actor);
         this.developerMode=0;
         this.yaw = q_yaw(this.rotation);
@@ -84,6 +106,7 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.listen("goHome", this.goHome);
         this.loadTank();
         this.listen("didShoot", this.didShoot);
+        playSound(battleground, null, true, true);
     }
 
     loadTank() {
@@ -174,12 +197,12 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
     didShoot() {
         if (this.isMyAvatar) return; // only play the sound if it is not your avatar
         //this.shootSound.stop();
-        playSound(shootSound, this.tank);
+        playSound(shootSound, this.tank, true);
     }
 
     shoot() {
         if (this.now()-this.lastShootTime > this.waitShootTime) {
-            playSound(shootSound, this.tank);
+            playSound(shootSound, this.tank, true);
             this.lastShootTime = this.now();
             // send a message with four numbers: launch position x, y, z and yaw
             const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time
@@ -268,6 +291,12 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 break;
             case '6':
                 if (this.developerMode === 5) this.publish("game", "bots", 500);
+                break;
+            case '-': case '_':
+                volume = Math.max(0, volume - 0.1);
+                break;
+            case '+': case '=':
+                volume = Math.min(1, volume + 0.1);
                 break;
             default:
         }

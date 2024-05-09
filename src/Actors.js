@@ -93,6 +93,12 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
         this.radiusSqr = this.radius*this.radius;
         this.doFlee();
         this.go([0,0,0]);
+        this.future(Math.random()*500).beep();
+    }
+
+    beep() { // beep twice a second
+        this.future(500).beep();
+        this.say("beep");
     }
 
     go(target) {
