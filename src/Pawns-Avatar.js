@@ -106,7 +106,7 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.listen("goHome", this.goHome);
         this.loadTank();
         this.listen("didShoot", this.didShoot);
-        playSound(battleground, null, true, true);
+        if (this.isMyAvatar) playSound(battleground, null, true, true);
     }
 
     loadTank() {
