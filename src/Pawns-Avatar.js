@@ -204,15 +204,17 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
     }
 
     shoot() {
-        if (this.now()-this.lastShootTime > this.waitShootTime) {
-            playSound(shootSound, this.tank, true);
-            this.lastShootTime = this.now();
-            // send a message with four numbers: launch position x, y, z and yaw
-            const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time
-            const pos = v3_add(this.translation, v3_rotate([0, 0, -dist], this.rotation)); // launch position
-            const args = [ ...pos, this.yaw + Math.PI];
-            this.say("shoot", args);
-            //console.log("Shoot");
+        if (this.shootNow) {
+            if (this.now()-this.lastShootTime > this.waitShootTime) {
+                playSound(shootSound, this.tank, true);
+                this.lastShootTime = this.now();
+                // send a message with four numbers: launch position x, y, z and yaw
+                const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time
+                const pos = v3_add(this.translation, v3_rotate([0, 0, -dist], this.rotation)); // launch position
+                const args = [ ...pos, this.yaw + Math.PI];
+                this.say("shoot", args);
+            }
+            this.future(this.waitShootTime*2).shoot();
         }
     }
 
@@ -244,6 +246,7 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 console.log("shiftKey Down");
                 this.highGear = 1.5; break;
             case " ":
+                this.shootNow = true;
                 this.shoot();
                 break;
             case "I": case "i":
@@ -325,6 +328,9 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
             case "Shift":
                 console.log("shiftKey Up");
                 this.highGear = 1; break;
+            case " ":
+                this.shootNow = false;
+                break;
             default:
         }
     }
