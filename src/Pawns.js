@@ -464,7 +464,7 @@ export class MissilePawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
     }
 
     bounceSound() {
-        playSound(bounce, this.renderObject, true);
+        playSound(bounce, this.renderObject, false);
     }
 
     destroy() {

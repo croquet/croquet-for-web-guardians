@@ -220,13 +220,13 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
     didShoot() {
         if (this.isMyAvatar) return; // only play the sound if it is not your avatar
         //this.shootSound.stop();
-        playSound(shootSound, this.tank, true);
+        playSound(shootSound, this.tank, false);
     }
 
     shoot() {
         if (this.shootNow) {
             if (this.now()-this.lastShootTime > this.waitShootTime) {
-                playSound(shootSound, this.tank, true);
+                playSound(shootSound, this.tank, false);
                 this.lastShootTime = this.now();
                 // send a message with four numbers: launch position x, y, z and yaw
                 const dist = this.speed * 0.05 + 2.0; // distance in 50ms' time
