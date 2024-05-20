@@ -259,7 +259,11 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
             case "ArrowRight": case "D": case "d":
                 this.turn = -1; break;
             case "O": case "o":
-                if (this.developerMode === 5) this.auto = !this.auto; break;
+                if (this.developerMode === 5) {
+                    this.shootNow = true;
+                    this.auto = !this.auto;
+                }
+                break;
             case "H": case "h":
                 if (this.developerMode === 5) this.goHome(); break;
             case "Shift":
