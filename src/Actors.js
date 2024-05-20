@@ -140,19 +140,27 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
     flee(blocker) {
         const from = v3_sub(this.translation, blocker.translation);
         const mag2 = v_mag2Sqr(from);
-        if (mag2 > this.radiusSqr) return;
+        let r, r2;
+        if (blocker.isAvatar) {
+            r2 = this.radiusSqr*2;
+            r = this.radius*2;
+        } else {
+            r2 = this.radiusSqr;
+            r = this.radius;
+        }
+
+        if (mag2 > r2) return;
         // move the bot to the radius of the blocker
         if (mag2<0.00001) {
             const a = Math.random() * 2 * Math.PI;
-            from[0] = this.radius * Math.cos(a);
+            from[0] = r * Math.cos(a);
             from[1] = 0;
-            from[2] = this.radius* Math.sin(a);
+            from[2] = r * Math.sin(a);
         } else {
             let mag = Math.sqrt(mag2);
-            //if (bot.isAvatar) mag/=2;
-            from[0] = this.radius * from[0] / mag;
+            from[0] = r * from[0] / mag;
             from[1] = 0;
-            from[2] = this.radius * from[2] / mag;
+            from[2] = r * from[2] / mag;
         }
         const translation = v3_add(blocker.translation, from);
         this.set({translation});
