@@ -260,8 +260,7 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
                 this.turn = -1; break;
             case "O": case "o":
                 if (this.developerMode === 5) {
-                    this.shootNow = true;
-                    this.auto = !this.auto;
+                    this.shootNow = this.auto = !this.auto;
                 }
                 break;
             case "H": case "h":
