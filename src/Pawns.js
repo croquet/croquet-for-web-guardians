@@ -246,7 +246,7 @@ export class FireballPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.pointLight = new THREE.PointLight(0xff8844, 1, 4, 2);
         this.fireball.add(this.pointLight);
         this.setRenderObject(this.fireball);
-        playSound(explosion, this.fireball, true);
+        playSound(explosion, this.fireball, false);
     }
 
     update(time, delta) {
