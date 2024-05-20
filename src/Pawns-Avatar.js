@@ -29,37 +29,51 @@ const v_sub2 = function (a,b) {
     return [a[0]-b[0], 0, a[2]-b[2]];
 };
 
-let soundSwitch = true; // turn sound on and off
+let soundSwitch = false; // turn sound on and off
 let volume = 1;
-let soundCount = 0;
+
 const maxSound = 16;
 const listener = new THREE.AudioListener();
 const soundList = {};
 const soundLoops = [];
 const loopSoundVolume = 0.25;
+
 export const playSound = function() {
     const audioLoader = new THREE.AudioLoader();
 
     function play(soundURL, parent3D, force, loop = false) {
 
-        if (!soundSwitch) return;
+        if (!force && !soundSwitch) return;
         if (soundList[soundURL]) playSoundOnce(soundList[soundURL], parent3D, force, loop);
         else {
             audioLoader.load( soundURL, buffer => {
-                soundList[soundURL] = buffer;
-                playSoundOnce(buffer, parent3D, force, loop);
+                soundList[soundURL] = {buffer, count:0};
+                playSoundOnce(soundList[soundURL], parent3D, force, loop);
             });
         }
     }
     return play;
 }();
 
-function playSoundOnce(buffer, parent3D, force, loop = false) {
-    if (!force && soundCount>maxSound) return;
-    soundCount++;
+class MyAudio extends THREE.PositionalAudio {
+    updateMatrixWorld(force) {
+        if(isNaN(this.parent.matrixWorld.elements[0])) 
+            {   console.log(this);
+                debugger;
+            }
+        // this.parent.updateMatrix();
+        //console.log("Matrix: ", this.matrix, this);
+        super.updateMatrixWorld(force);
+    }
+}
+
+function playSoundOnce(sound, parent3D, force, loop = false) {
+    if (!force && sound.count>maxSound) return;
+    sound.count++;
     let mySound;
     if (parent3D) {
         mySound = new THREE.PositionalAudio( listener );  // listener is a global
+        //mySound = new MyAudio( listener );  // listener is a global
         mySound.setRefDistance( 8 );
         mySound.setVolume( volume );
     }
@@ -69,12 +83,12 @@ function playSoundOnce(buffer, parent3D, force, loop = false) {
         soundLoops.push(mySound);
     }
 
-    mySound.setBuffer( buffer );
+    mySound.setBuffer( sound.buffer );
     mySound.setLoop(loop);
     if (parent3D) {
         parent3D.add(mySound);
         parent3D.mySound = mySound;
-        mySound.onEnded = ()=> { soundCount--; mySound.removeFromParent(); };
+        mySound.onEnded = ()=> { sound.count--; mySound.removeFromParent(); };
     }
     mySound.play();
 
@@ -110,6 +124,12 @@ export class AvatarPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible, PM_
         this.loadTank();
         this.listen("didShoot", this.didShoot);
         if (this.isMyAvatar) playSound(battleground, null, true, true);
+        this.subscribe(this.viewId, "synced", this.handleSynced);
+    }
+
+    handleSynced() {
+        console.log("session is synced - play sound");
+        soundSwitch = true;
     }
 
     loadTank() {

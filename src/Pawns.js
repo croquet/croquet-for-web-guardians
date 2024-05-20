@@ -54,7 +54,7 @@ import bollard_ from "../assets/bollard.glb";
 import tank_tracks from "../assets/newtank_treads.glb";
 import tank_body from "../assets/newtank.glb";
 
-import fireballTexture from "../assets/explosion.png";
+import fireballTexture from "../assets/explosion red.png";
 import * as fireballFragmentShader from "../assets/fireball.frag.js";
 import * as fireballVertexShader from "../assets/fireball.vert.js";
 
@@ -246,7 +246,6 @@ export class FireballPawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         this.pointLight = new THREE.PointLight(0xff8844, 1, 4, 2);
         this.fireball.add(this.pointLight);
         this.setRenderObject(this.fireball);
-        this.audioLoader = new THREE.AudioLoader();
         playSound(explosion, this.fireball, true);
     }
 
@@ -462,7 +461,6 @@ export class MissilePawn extends mix(Pawn).with(PM_Smoothed, PM_ThreeVisible) {
         mesh.castShadow = true;
         this.setRenderObject(mesh);
         this.listen("bounce", this.bounceSound);
-        this.audioLoader = new THREE.AudioLoader();
     }
 
     bounceSound() {
