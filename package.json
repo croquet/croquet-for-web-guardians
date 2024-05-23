@@ -1,6 +1,6 @@
 {
   "name": "@croquet/worldcore-guardians",
-  "version": "2.0.0-alpha.3",
+  "version": "2.0.0-alpha.20",
   "description": "Worldcore Guardians",
   "private": true,
   "scripts": {
@@ -10,9 +10,9 @@
   "author": "Croquet Corporation",
   "license": "Apache-2.0",
   "dependencies": {
-    "@croquet/worldcore-kernel": "^2.0.0-alpha.19",
-    "@croquet/worldcore-three": "^2.0.0-alpha.19",
-    "@croquet/worldcore-widget2": "^2.0.0-alpha.19"
+    "@croquet/worldcore-kernel": "^2.0.0-alpha.20",
+    "@croquet/worldcore-three": "^2.0.0-alpha.20",
+    "@croquet/worldcore-widget2": "^2.0.0-alpha.20"
   },
   "devDependencies": {
     "eslint": "^8.43.0",
