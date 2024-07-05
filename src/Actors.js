@@ -126,13 +126,18 @@ class BotActor extends mix(Actor).with(AM_Spatial, AM_OnGrid, AM_Behavioral) {
     }
 
     doFlee() {
-        // blow up at the tower
-        if ( v_mag2Sqr(this.translation) < 20 ) this.killMe(1, true);
-        // otherwise, check if we need to move around an object
-        if (!this.doomed) {
-            this.future(100).doFlee();
+        let distSqr = v_mag2Sqr(this.translation);
+        // stop avoiding collisions when we get close to the tower
+        if ( distSqr < 1000 ) {
+            // if we are close to the tower, blow up
+            if ( distSqr < 20 ) {
+                this.killMe(1, true);
+            }
+            if ( !this.doomed ) this.future(100).doFlee();
+        } else { // otherwise, check if we need to move around an object
+            if ( !this.doomed ) this.future(100).doFlee();
             const blockers = this.pingAll("block");
-            if (blockers.length===0) return;
+            if (blockers.length===0 || blockers.length>4) return;
             blockers.forEach(blocker => this.flee(blocker));
         }
     }
