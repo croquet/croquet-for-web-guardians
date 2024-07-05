@@ -230,6 +230,8 @@ class MissileActor extends mix(Actor).with(AM_Spatial, AM_Behavioral) {
             const d2 = v_dist2Sqr(this.translation, bot.translation);
             if (d2 < 4) { // bot radius is 2
                 bot.killMe(0.3, false);
+                this._avatar.addKill();
+                console.log('Bot killed by: ', this._avatar.id, this._avatar.kills);
                 // console.log(`bot ${bot.id} hit at distance ${Math.sqrt(d2).toFixed(2)}`);
                 this.destroy();
                 return;
@@ -274,6 +276,7 @@ class AvatarActor extends mix(Actor).with(AM_Spatial, AM_Avatar, AM_OnGrid) {
     init(options) {
         super.init(options);
         this.isAvatar = true;
+        this._kills = 0;
         this.listen("shoot", this.doShoot);
         this.subscribe("all", "godMode", this.doGodMode);
     }
@@ -284,19 +287,28 @@ class AvatarActor extends mix(Actor).with(AM_Spatial, AM_Avatar, AM_OnGrid) {
         this.publish("all", "godModeChanged", gm);
     }
 
+    addKill() {
+        this.publish(this.id, "killset");
+        this._kills++;
+    }
+
+    get kills() { return this._kills; }
+    set kills(k) { this._kills = k; }
     doShoot(argFloats) {
         // view is now expected to set the launch location, given that the launcher
         // can compensate for its own velocity
         const [ x, y, z, yaw ] = argFloats;
         const aim = v3_rotate([0,0,1], q_axisAngle([0,1,0], yaw));
         const translation = [x, y, z]; // v3_add([x, y, z], v3_scale(aim, 5));
-        const missile = MissileActor.create({parent: this.parent, translation, colorIndex: this.colorIndex});
+        const missile = MissileActor.create({parent: this.parent, translation, colorIndex: this.colorIndex, avatar: this});
         missile.go = missile.behavior.start({name: "GoBehavior", aim, speed: missileSpeed, tickRate: 20});
         missile.ballisticVelocity = aim.map(val => val * missileSpeed);
         this.say("didShoot");
     }
 
     resetGame() { // don't go home at end of game
+        this.publish(this.id, "killtotal", this.kills);
+        this.kills = 0;
         // this.say("goHome");
     }
 }
