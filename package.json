@@ -2,6 +2,7 @@
   "name": "@croquet/worldcore-guardians",
   "version": "2.0.0-alpha.20",
   "description": "Worldcore Guardians",
+  "type": "module",
   "private": true,
   "scripts": {
     "start": "webpack serve --no-live-reload --no-hot --mode development --devtool source-map",

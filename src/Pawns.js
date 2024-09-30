@@ -507,7 +507,6 @@ class LobbyRelayPawn extends Pawn {
 
     destroy() {
         clearInterval(this.lobbyInterval);
-        window.removeEventListener("message", this);
         super.destroy();
         console.log("relay", this.viewId, "destroyed");
     }

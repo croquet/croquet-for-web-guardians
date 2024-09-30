@@ -412,7 +412,6 @@ class LobbyView extends Croquet.View {
 
     sessionClicked(name) {
         const session = this.model.sessions.get(name);
-        console.log("------- session: ", session);
         if ((session && this.maxUsers > session.users.count) || !session) {
             new Audio(engineStart).play();
             enterApp(name);
